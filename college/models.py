@@ -94,3 +94,65 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return f'{self.student} — {self.group}'
+
+
+class Teacher(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='teacher', verbose_name='Учётная запись', limit_choices_to={'role': 'teacher'})
+    staff_number = models.CharField('Табельный номер', max_length=25, unique=True)
+    department = models.CharField('Отделение', max_length=120)
+    position = models.CharField('Должность', max_length=100, default='Преподаватель')
+    qualification = models.CharField('Категория', max_length=100, blank=True)
+    hired_on = models.DateField('Дата приёма')
+    phone = models.CharField('Рабочий телефон', max_length=30, blank=True)
+    is_active = models.BooleanField('Работает', default=True)
+
+    class Meta:
+        ordering = ['user__last_name', 'user__first_name']
+        verbose_name = 'преподаватель'
+        verbose_name_plural = 'преподаватели'
+
+    def clean(self):
+        if self.user_id and self.user.role != 'teacher':
+            raise ValidationError({'user': 'Нужна учётная запись преподавателя.'})
+
+    def __str__(self):
+        return str(self.user)
+
+
+class Discipline(models.Model):
+    code = models.CharField('Код', max_length=25, unique=True)
+    name = models.CharField('Название', max_length=160)
+    description = models.TextField('Описание', max_length=1500)
+    department = models.CharField('Отделение', max_length=120)
+    hours = models.PositiveSmallIntegerField('Объём, академических часов')
+    assessment = models.CharField('Форма контроля', max_length=15, choices=[('exam', 'Экзамен'), ('credit', 'Зачёт')])
+    lesson_type = models.CharField('Основной вид занятий', max_length=60, default='Практическое занятие')
+    is_active = models.BooleanField('Преподаётся', default=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'дисциплина'
+        verbose_name_plural = 'дисциплины'
+        constraints = [models.CheckConstraint(condition=Q(hours__gt=0), name='discipline_positive_hours')]
+
+    def __str__(self):
+        return self.name
+
+
+class TeachingAssignment(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.PROTECT, related_name='assignments', verbose_name='Преподаватель')
+    group = models.ForeignKey(StudyGroup, on_delete=models.PROTECT, related_name='assignments', verbose_name='Группа')
+    discipline = models.ForeignKey(Discipline, on_delete=models.PROTECT, related_name='assignments', verbose_name='Дисциплина')
+    started_on = models.DateField('Начало периода')
+    ended_on = models.DateField('Конец периода')
+    is_active = models.BooleanField('Действует', default=True)
+
+    class Meta:
+        ordering = ['group__code', 'discipline__name']
+        constraints = [
+            models.CheckConstraint(condition=Q(ended_on__gte=F('started_on')), name='assignment_dates_order'),
+            models.UniqueConstraint(fields=['teacher', 'group', 'discipline', 'started_on'], name='unique_teaching_assignment'),
+        ]
+
+    def __str__(self):
+        return f'{self.group} · {self.discipline} · {self.teacher}'
