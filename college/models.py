@@ -156,3 +156,40 @@ class TeachingAssignment(models.Model):
 
     def __str__(self):
         return f'{self.group} · {self.discipline} · {self.teacher}'
+
+
+class Lesson(models.Model):
+    STATES = [('planned', 'Запланировано'), ('completed', 'Проведено'), ('cancelled', 'Отменено')]
+    assignment = models.ForeignKey(TeachingAssignment, on_delete=models.PROTECT, related_name='lessons', verbose_name='Назначение')
+    date = models.DateField('Дата')
+    starts_at = models.TimeField('Начало')
+    ends_at = models.TimeField('Окончание')
+    topic = models.CharField('Тема', max_length=200)
+    room = models.CharField('Аудитория', max_length=30)
+    state = models.CharField('Состояние', max_length=12, choices=STATES, default='planned')
+    closed_at = models.DateTimeField(null=True, blank=True)
+    closed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name='closed_lessons')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', 'starts_at', 'id']
+        verbose_name = 'занятие'
+        verbose_name_plural = 'занятия'
+        constraints = [models.CheckConstraint(condition=Q(ends_at__gt=F('starts_at')), name='lesson_time_order')]
+        indexes = [models.Index(fields=['date', 'state'])]
+
+    def clean(self):
+        if not self.assignment_id or not self.date:
+            return
+        if not self.assignment.started_on <= self.date <= self.assignment.ended_on:
+            raise ValidationError({'date': 'Дата выходит за период назначения преподавателя.'})
+        if self.state == 'cancelled' or not self.starts_at or not self.ends_at:
+            return
+        overlaps = Lesson.objects.filter(date=self.date, starts_at__lt=self.ends_at, ends_at__gt=self.starts_at).exclude(pk=self.pk).exclude(state='cancelled')
+        if overlaps.filter(assignment__group_id=self.assignment.group_id).exists():
+            raise ValidationError('У группы уже есть занятие в это время.')
+        if overlaps.filter(assignment__teacher_id=self.assignment.teacher_id).exists():
+            raise ValidationError('Преподаватель занят в это время.')
+
+    def __str__(self):
+        return f'{self.date:%d.%m.%Y} · {self.assignment.group} · {self.assignment.discipline}'
