@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block actions %}<a class="button secondary" href="{% url 'change_password' %}">Сменить пароль</a>{% endblock %}
+{% block content %}
+<div class="grid">
+  <form method="post" class="panel">{% csrf_token %}{% include 'includes/fields.html' %}<button>Сохранить профиль</button></form>
+  <section class="panel"><h2>Доступ к журналу</h2><dl class="detail-list"><dt>Логин</dt><dd>{{ user.username }}</dd><dt>Роль</dt><dd>{{ user.get_role_display }}</dd><dt>Последний вход</dt><dd>{{ user.last_login|date:'d.m.Y H:i' }}</dd></dl>
+  {% if user.role == 'teacher' %}<p>В разделе «Занятия» доступны занятия, назначенные вам. Отметки и отчёты остальных преподавателей закрыты.</p>{% elif user.role == 'curator' %}<p>Доступны группы, закреплённые за вами. Можно просматривать журнал и уточнять уважительные причины пропусков.</p>{% else %}<p>Доступны все группы, справочники, пользователи и журналы.</p>{% endif %}
+  <a href="{% url 'help' %}">Порядок работы с журналом</a></section>
+</div>
+{% endblock %}
