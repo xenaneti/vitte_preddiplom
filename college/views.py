@@ -103,3 +103,21 @@ def teachers(request):
 def teacher_edit(request, pk=None):
     record = get_object_or_404(Teacher, pk=pk) if pk else Teacher()
     return save_form(request, TeacherForm(request.POST or None, instance=record), 'Преподаватель', 'teachers', 'teachers')
+
+
+@login_required
+def lessons(request):
+    from journal.filters import JournalFilter
+    form = JournalFilter(request.GET, request.user)
+    records = form.filter_lessons(visible_lessons(request.user))
+    return render(request, 'college/lessons.html', {'filter': form, 'records': records[:250], 'title': 'Занятия', 'section': 'lessons', 'subtitle': 'Расписание и состояние журналов за выбранный период'})
+
+
+@admin_required
+def lesson_edit(request, pk=None):
+    record = get_object_or_404(Lesson, pk=pk) if pk else Lesson()
+    form = LessonForm(request.POST or None, instance=record)
+    if pk and record.marks.exists():
+        for name in ['assignment', 'date', 'starts_at', 'ends_at']:
+            form.fields[name].disabled = True
+    return save_form(request, form, 'Изменить занятие' if pk else 'Новое занятие', 'lessons', 'lessons')
