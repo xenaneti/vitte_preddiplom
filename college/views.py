@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,8 +10,9 @@ from django.utils import timezone
 from accounts.permissions import admin_required
 from .access import visible_disciplines, visible_groups, visible_lessons, visible_students
 from .common import form_page, page_records, save_form
-from .forms import AssignmentForm, DisciplineForm, GroupForm, LessonForm, SpecialtyForm, StudentCreateForm, StudentForm, TeacherForm
+from .forms import AssignmentForm, DisciplineForm, GroupForm, LessonForm, SpecialtyForm, StudentCreateForm, StudentForm, TeacherForm, TransferForm
 from .models import Discipline, Enrollment, Lesson, Specialty, Student, StudyGroup, Teacher, TeachingAssignment
+from .services import transfer_student
 
 
 @login_required
@@ -43,3 +45,18 @@ def student_edit(request, pk=None):
         messages.success(request, 'Сведения о студенте сохранены.')
         return redirect('student_detail', pk=student.pk)
     return form_page(request, form, 'Изменить студента' if pk else 'Добавить студента', 'students', 'students')
+
+
+@admin_required
+def student_transfer(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    form = TransferForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        try:
+            transfer_student(student, form.cleaned_data['group'], form.cleaned_data['date'], form.cleaned_data['note'])
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, 'Перевод сохранён. Прежний журнал остался без изменений.')
+            return redirect('student_detail', pk=pk)
+    return form_page(request, form, f'Перевод: {student}', 'students', 'students')
