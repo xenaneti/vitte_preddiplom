@@ -81,3 +81,25 @@ def group_edit(request, pk=None):
     record = get_object_or_404(StudyGroup, pk=pk) if pk else StudyGroup()
     form = GroupForm(request.POST or None, instance=record)
     return save_form(request, form, 'Изменить группу' if pk else 'Добавить группу', 'groups', 'groups')
+
+
+@login_required
+def disciplines(request):
+    return render(request, 'college/disciplines.html', {'records': visible_disciplines(request.user), 'title': 'Дисциплины', 'section': 'disciplines'})
+
+
+@admin_required
+def discipline_edit(request, pk=None):
+    record = get_object_or_404(Discipline, pk=pk) if pk else Discipline()
+    return save_form(request, DisciplineForm(request.POST or None, instance=record), 'Дисциплина', 'disciplines', 'disciplines')
+
+
+@admin_required
+def teachers(request):
+    return render(request, 'college/teachers.html', {'records': Teacher.objects.select_related('user'), 'title': 'Преподаватели', 'section': 'teachers'})
+
+
+@admin_required
+def teacher_edit(request, pk=None):
+    record = get_object_or_404(Teacher, pk=pk) if pk else Teacher()
+    return save_form(request, TeacherForm(request.POST or None, instance=record), 'Преподаватель', 'teachers', 'teachers')

@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block actions %}{% if user.is_administrator %}<a class="button" href="{% url 'discipline_create' %}">Добавить дисциплину</a>{% endif %}{% endblock %}
+{% block content %}<div class="grid">{% for record in records %}<section class="panel"><span class="muted">{{ record.code }}</span><h2>{{ record.name }}</h2><p>{{ record.description }}</p><p class="muted">{{ record.hours }} ак. ч. · {{ record.get_assessment_display }} · {{ record.lesson_type }}</p>{% if not record.is_active %}<p class="badge">Архив</p>{% endif %}{% if user.is_administrator %}<a href="{% url 'discipline_edit' record.pk %}">Изменить</a>{% endif %}</section>{% empty %}<p class="empty">Нет доступных дисциплин.</p>{% endfor %}</div>{% endblock %}

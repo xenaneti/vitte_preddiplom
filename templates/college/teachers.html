@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block actions %}<a class="button" href="{% url 'teacher_create' %}">Добавить преподавателя</a>{% endblock %}
+{% block content %}<div class="panel table-wrap"><table><thead><tr><th>Преподаватель</th><th>Табельный номер</th><th>Отделение</th><th>Категория</th><th>Состояние</th></tr></thead><tbody>{% for record in records %}<tr><td><a href="{% url 'teacher_edit' record.pk %}">{{ record }}</a><small>{{ record.user.email }}</small></td><td>{{ record.staff_number }}</td><td>{{ record.department }}</td><td>{{ record.qualification|default:'Не указана' }}</td><td>{{ record.is_active|yesno:'Работает,Архив' }}</td></tr>{% empty %}<tr><td colspan="5">Преподаватели пока не добавлены.</td></tr>{% endfor %}</tbody></table></div>{% endblock %}
