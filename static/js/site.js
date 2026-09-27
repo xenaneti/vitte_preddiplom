@@ -12,3 +12,12 @@ if (menuButton && navigation) {
     }
   });
 }
+
+const presentButton = document.querySelector('#all-present');
+if (presentButton) {
+  presentButton.addEventListener('click', () => {
+    document.querySelectorAll('select[name$="-status"]').forEach(select => {
+      if (!select.disabled && !select.value) select.value = 'present';
+    });
+  });
+}
