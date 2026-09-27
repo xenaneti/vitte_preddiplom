@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block actions %}{% if user.is_administrator %}<a class="button secondary" href="{% url 'lesson_edit' lesson.pk %}">Изменить занятие</a>{% endif %}{% endblock %}
+{% block content %}
+<section class="panel lesson-info"><div><strong>{{ lesson.assignment.group }} · {{ lesson.assignment.discipline }}</strong><p>{{ lesson.topic }}</p></div><div>{{ lesson.date|date:'d.m.Y' }} · {{ lesson.starts_at|time:'H:i' }}–{{ lesson.ends_at|time:'H:i' }}<p class="muted">{{ lesson.assignment.teacher }} · аудитория {{ lesson.room }}</p></div><span class="badge {{ lesson.state }}">{{ lesson.get_state_display }}</span></section>
+{% if lesson.state == 'completed' %}<p class="notice">Журнал закрыт. При исправлении отметки укажите причину. Предыдущее значение останется в истории.</p>{% elif lesson.state == 'cancelled' %}<p class="notice">Занятие отменено и не учитывается в статистике.</p>{% endif %}
+{% if not teacher_access %}<p class="muted">Можно уточнить причину отсутствия студентов своей группы. Для изменения укажите основание.</p>{% endif %}
+<form method="post" class="panel journal-form">
+{% csrf_token %}
+<div class="toolbar">{% if teacher_access and lesson.state == 'planned' %}<button type="button" class="secondary" id="all-present">Все присутствуют</button><span class="muted">Заполнить только пустые отметки</span>{% endif %}</div>
+<div class="table-wrap"><table class="marks-table"><thead><tr><th>Студент</th><th>Отметка</th><th>Причина и комментарий</th><th>Основание исправления</th></tr></thead><tbody>
+{% for row in rows %}
+<tr><td><a href="{% url 'student_detail' row.student.pk %}">{{ row.student }}</a><small>{{ row.student.number }}</small>{{ row.form.version }}</td>
+<td>{{ row.form.status }}<div class="minutes">{{ row.form.late_minutes.label_tag }}{{ row.form.late_minutes }}</div></td>
+<td>{{ row.form.reason }}{{ row.form.comment }}</td><td>{{ row.form.explanation }}</td></tr>
+{% if row.form.errors %}<tr><td colspan="4"><strong>{{ row.student }}</strong>{{ row.form.errors }}</td></tr>{% endif %}
+{% empty %}<tr><td colspan="4">На дату занятия в группе нет студентов.</td></tr>{% endfor %}
+</tbody></table></div>
+{% if rows and lesson.state != 'cancelled' %}<div class="form-actions"><button name="action" value="save">Сохранить отметки</button>{% if teacher_access and lesson.state == 'planned' %}<button class="secondary" name="action" value="close">Сохранить и закрыть журнал</button>{% endif %}</div>{% endif %}
+</form>
+{% endblock %}
