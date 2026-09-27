@@ -60,3 +60,24 @@ def student_transfer(request, pk):
             messages.success(request, 'Перевод сохранён. Прежний журнал остался без изменений.')
             return redirect('student_detail', pk=pk)
     return form_page(request, form, f'Перевод: {student}', 'students', 'students')
+
+
+@login_required
+def groups(request):
+    return render(request, 'college/groups.html', {'records': visible_groups(request.user), 'title': 'Группы', 'section': 'groups'})
+
+
+@login_required
+def group_detail(request, pk):
+    group = get_object_or_404(visible_groups(request.user), pk=pk)
+    date = timezone.localdate()
+    records = Enrollment.objects.filter(group=group, started_on__lte=date).filter(Q(ended_on__isnull=True) | Q(ended_on__gte=date)).select_related('student')
+    lessons = visible_lessons(request.user).filter(assignment__group=group)[:12]
+    return render(request, 'college/group.html', {'group': group, 'records': records, 'lessons': lessons, 'title': str(group), 'section': 'groups', 'breadcrumbs': [('Группы', reverse('groups'))]})
+
+
+@admin_required
+def group_edit(request, pk=None):
+    record = get_object_or_404(StudyGroup, pk=pk) if pk else StudyGroup()
+    form = GroupForm(request.POST or None, instance=record)
+    return save_form(request, form, 'Изменить группу' if pk else 'Добавить группу', 'groups', 'groups')
