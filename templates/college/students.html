@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block actions %}{% if user.is_administrator %}<a class="button" href="{% url 'student_create' %}">Добавить студента</a>{% endif %}{% endblock %}
+{% block content %}
+<section class="panel"><form class="filters" method="get"><div class="field"><label for="q">Фамилия, имя или номер</label><input id="q" name="q" value="{{ query }}" maxlength="100"></div><button>Найти</button><a class="button secondary" href="{% url 'students' %}">Сбросить</a></form>
+<div class="table-wrap"><table><thead><tr><th>Студент</th><th>Номер</th><th>Дата зачисления</th><th>Состояние</th></tr></thead><tbody>{% for record in records %}<tr><td><a href="{% url 'student_detail' record.pk %}">{{ record }}</a></td><td>{{ record.number }}</td><td>{{ record.admitted_at|date:'d.m.Y' }}</td><td>{{ record.is_active|yesno:'Обучается,Архив' }}</td></tr>{% empty %}<tr><td colspan="4">Студенты не найдены.</td></tr>{% endfor %}</tbody></table></div>{% include 'includes/pagination.html' %}</section>
+{% endblock %}
