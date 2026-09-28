@@ -1,8 +1,10 @@
 from django import forms
+from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 
 from college.access import visible_disciplines, visible_groups, visible_students
 from college.forms import DateInput
+from college.models import Enrollment
 
 
 class JournalFilter(forms.Form):
@@ -42,5 +44,9 @@ class JournalFilter(forms.Form):
         if data.get('discipline'):
             records = records.filter(assignment__discipline=data['discipline'])
         if data.get('student'):
-            records = records.filter(marks__student=data['student']).distinct()
+            membership = Enrollment.objects.filter(
+                student=data['student'], group_id=OuterRef('assignment__group_id'),
+                started_on__lte=OuterRef('date'),
+            ).filter(Q(ended_on__isnull=True) | Q(ended_on__gte=OuterRef('date')))
+            records = records.filter(Exists(membership))
         return records
