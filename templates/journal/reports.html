@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block actions %}<a class="button" href="?{{ export_query }}">Скачать Excel</a>{% endblock %}
+{% block content %}
+<section class="panel"><h2>Параметры отчёта</h2>{% include 'includes/filters.html' %}<p class="muted">В файл войдут сводка по группам и подробные отметки за выбранный период. Сохраняются те же ограничения доступа, что и в журнале.</p></section>
+<section class="panel"><h2>Предварительный просмотр</h2>{% include 'journal/summary.html' %}</section>
+{% endblock %}

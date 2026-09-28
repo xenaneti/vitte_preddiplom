@@ -10,6 +10,7 @@ from .forms import MarkForm
 from .models import AttendanceChange
 from .services import save_marks, snapshot
 from .statistics import report_data
+from .export import excel_report
 
 
 @login_required
@@ -71,3 +72,18 @@ def statistics(request):
     data = report_data(request.user, form)
     data.update({'filter': form, 'title': 'Статистика посещаемости', 'section': 'statistics'})
     return render(request, 'journal/statistics.html', data)
+
+
+@login_required
+def reports(request):
+    form = JournalFilter(request.GET, request.user)
+    data = report_data(request.user, form)
+    if request.GET.get('format') == 'xlsx' and form.is_valid():
+        if data['marks'].count() > 50000:
+            messages.error(request, 'Слишком много отметок. Сократите период или выберите группу.')
+        else:
+            return excel_report(data, form.cleaned_data['date_from'], form.cleaned_data['date_to'])
+    query = request.GET.copy()
+    query['format'] = 'xlsx'
+    data.update({'filter': form, 'title': 'Отчёты', 'section': 'reports', 'export_query': query.urlencode()})
+    return render(request, 'journal/reports.html', data)
