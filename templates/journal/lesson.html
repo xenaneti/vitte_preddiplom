@@ -1,8 +1,13 @@
 {% extends 'base.html' %}
-{% block actions %}{% if user.is_administrator %}<a class="button secondary" href="{% url 'lesson_edit' lesson.pk %}">Изменить занятие</a>{% endif %}{% endblock %}
+{% block actions %}
+{% if user.is_administrator %}
+<a class="button secondary" href="{% url 'lesson_edit' lesson.pk %}">Изменить занятие</a>
+{% if lesson.state == 'planned' and not lesson.marks.exists %}<a class="button secondary" href="{% url 'lesson_cancel' lesson.pk %}">Отменить занятие</a>{% endif %}
+{% endif %}
+{% endblock %}
 {% block content %}
 <section class="panel lesson-info"><div><strong>{{ lesson.assignment.group }} · {{ lesson.assignment.discipline }}</strong><p>{{ lesson.topic }}</p></div><div>{{ lesson.date|date:'d.m.Y' }} · {{ lesson.starts_at|time:'H:i' }}–{{ lesson.ends_at|time:'H:i' }}<p class="muted">{{ lesson.assignment.teacher }} · аудитория {{ lesson.room }}</p></div><span class="badge {{ lesson.state }}">{{ lesson.get_state_display }}</span></section>
-{% if lesson.state == 'completed' %}<p class="notice">Журнал закрыт. При исправлении отметки укажите причину. Предыдущее значение останется в истории.</p>{% elif lesson.state == 'cancelled' %}<p class="notice">Занятие отменено и не учитывается в статистике.</p>{% endif %}
+{% if lesson.state == 'completed' %}<p class="notice">Журнал закрыт. При исправлении отметки укажите причину. Предыдущее значение останется в истории.</p>{% elif lesson.state == 'cancelled' %}<p class="notice">Занятие отменено: {{ lesson.cancellation_reason }}. Оно не учитывается в статистике.</p>{% endif %}
 {% if not teacher_access %}<p class="muted">Можно уточнить причину отсутствия студентов своей группы. Для изменения укажите основание.</p>{% endif %}
 <form method="post" class="panel journal-form">
 {% csrf_token %}

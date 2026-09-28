@@ -73,6 +73,10 @@ class TransferForm(forms.Form):
     note = forms.CharField(label='Основание', max_length=200)
 
 
+class CancellationForm(forms.Form):
+    reason = forms.CharField(label='Причина отмены', max_length=250, widget=forms.Textarea(attrs={'rows': 3}))
+
+
 class ImportForm(forms.Form):
     group = forms.ModelChoiceField(label='Группа', queryset=StudyGroup.objects.filter(is_active=True))
     file = forms.FileField(label='Список студентов в CSV', help_text='UTF-8, разделитель «;», не более 500 студентов и 1 МБ.')

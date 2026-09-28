@@ -3,6 +3,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from college.access import can_mark, lesson_students, visible_lessons
+from college.models import Student
 from .models import Attendance, AttendanceChange
 
 
@@ -22,6 +23,8 @@ def save_marks(user, lesson_id, rows, close=False):
     teacher_access = can_mark(user, lesson)
     if not teacher_access and user.role != 'curator':
         raise PermissionDenied
+    student_ids = [student_id for student_id, data in rows]
+    list(Student.objects.filter(pk__in=student_ids).order_by('pk').select_for_update())
     allowed_students = set(lesson_students(lesson).values_list('id', flat=True))
     changes = 0
     for student_id, data in rows:

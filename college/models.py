@@ -154,6 +154,12 @@ class TeachingAssignment(models.Model):
             models.UniqueConstraint(fields=['teacher', 'group', 'discipline', 'started_on'], name='unique_teaching_assignment'),
         ]
 
+    def clean(self):
+        if self.pk and self.started_on and self.ended_on:
+            outside = self.lessons.filter(Q(date__lt=self.started_on) | Q(date__gt=self.ended_on))
+            if outside.exists():
+                raise ValidationError('Вне указанного периода остаются занятия. Проверьте даты назначения.')
+
     def __str__(self):
         return f'{self.group} · {self.discipline} · {self.teacher}'
 
@@ -168,6 +174,9 @@ class Lesson(models.Model):
     room = models.CharField('Аудитория', max_length=30)
     state = models.CharField('Состояние', max_length=12, choices=STATES, default='planned')
     closed_at = models.DateTimeField(null=True, blank=True)
+    cancellation_reason = models.CharField('Причина отмены', max_length=250, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancelled_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name='cancelled_lessons')
     closed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name='closed_lessons')
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -12,9 +12,9 @@ from django.utils import timezone
 from accounts.permissions import admin_required
 from .access import visible_disciplines, visible_groups, visible_lessons, visible_students
 from .common import form_page, page_records, save_form
-from .forms import AssignmentForm, DisciplineForm, GroupForm, ImportForm, LessonForm, SpecialtyForm, StudentCreateForm, StudentForm, TeacherForm, TransferForm
+from .forms import AssignmentForm, CancellationForm, DisciplineForm, GroupForm, ImportForm, LessonForm, SpecialtyForm, StudentCreateForm, StudentForm, TeacherForm, TransferForm
 from .models import Discipline, Enrollment, Lesson, Specialty, Student, StudyGroup, Teacher, TeachingAssignment
-from .services import transfer_student
+from .services import cancel_lesson, save_lesson, transfer_student
 
 
 @login_required
@@ -122,7 +122,30 @@ def lesson_edit(request, pk=None):
     if pk and record.marks.exists():
         for name in ['assignment', 'date', 'starts_at', 'ends_at']:
             form.fields[name].disabled = True
-    return save_form(request, form, 'Изменить занятие' if pk else 'Новое занятие', 'lessons', 'lessons')
+    if request.method == 'POST' and form.is_valid():
+        try:
+            save_lesson(form)
+        except ValidationError as error:
+            form.add_error(None, ' '.join(error.messages))
+        else:
+            messages.success(request, 'Занятие сохранено.')
+            return redirect('lessons')
+    return form_page(request, form, 'Изменить занятие' if pk else 'Новое занятие', 'lessons', 'lessons')
+
+
+@admin_required
+def lesson_cancel(request, pk):
+    lesson = get_object_or_404(Lesson, pk=pk)
+    form = CancellationForm(request.POST if request.method == 'POST' else None)
+    if request.method == 'POST' and form.is_valid():
+        try:
+            cancel_lesson(request.user, pk, form.cleaned_data['reason'])
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, 'Занятие отменено.')
+            return redirect('lesson_journal', pk=pk)
+    return form_page(request, form, f'Отмена занятия: {lesson}', 'lessons', 'lessons')
 
 
 @login_required
