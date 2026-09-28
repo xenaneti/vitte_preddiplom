@@ -11,13 +11,20 @@ HEADERS = ['number', 'last_name', 'first_name', 'middle_name', 'birth_date', 'em
 
 
 def read_students(upload):
+    try:
+        return parse_students(upload)
+    except csv.Error:
+        raise ValidationError('Не удалось прочитать CSV. Проверьте кавычки и длину полей.')
+
+
+def parse_students(upload):
     if upload.size > 1024 * 1024:
         raise ValidationError('Файл должен быть не больше 1 МБ.')
     try:
         text = upload.read().decode('utf-8-sig')
     except UnicodeDecodeError:
         raise ValidationError('Сохраните CSV в кодировке UTF-8.')
-    reader = csv.DictReader(StringIO(text), delimiter=';')
+    reader = csv.DictReader(StringIO(text), delimiter=';', strict=True)
     if reader.fieldnames != HEADERS:
         raise ValidationError('Заголовки не совпадают с образцом. Используйте разделитель «;».')
     records, errors, numbers = [], [], set()
@@ -33,7 +40,7 @@ def read_students(upload):
         if data['number'] in numbers:
             errors.append(f'Строка {row_number}: номер повторяется в файле.')
         elif not form.is_valid():
-            details = '; '.join(f'{form.fields[field].label}: {", ".join(messages)}' for field, messages in form.errors.items())
+            details = '; '.join(str(message) for messages in form.errors.values() for message in messages)
             errors.append(f'Строка {row_number}: {details}')
         else:
             records.append(data)
