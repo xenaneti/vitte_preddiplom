@@ -85,3 +85,4 @@ SECURE_SSL_REDIRECT = USE_HTTPS
 if os.getenv('PROXY_HTTPS', '0') == '1':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
+CACHES = {'default': {'BACKEND': 'django.core.cache.backends.db.DatabaseCache', 'LOCATION': 'attendance_cache'}}
