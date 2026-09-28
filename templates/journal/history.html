@@ -1,5 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
-<p class="muted">Фильтр дат относится к датам занятий. Показаны последние 300 изменений.</p>
-<section class="panel">{% include 'includes/filters.html' %}<div class="table-wrap"><table><thead><tr><th>Когда и кто</th><th>Студент и занятие</th><th>Было</th><th>Стало</th><th>Основание</th></tr></thead><tbody>{% for change in records %}<tr><td>{{ change.created_at|date:'d.m.Y H:i:s' }}<small>{{ change.author }}</small></td><td>{{ change.attendance.student }}<small><a href="{% url 'lesson_journal' change.attendance.lesson_id %}">{{ change.attendance.lesson.date|date:'d.m.Y' }} · {{ change.attendance.lesson.assignment.discipline }}</a></small></td><td>{{ change.before.status|default:'Не отмечено' }}{% if change.before.late_minutes %}, {{ change.before.late_minutes }} мин.{% endif %}<small>{{ change.before.comment }}</small></td><td>{{ change.after.status }}{% if change.after.late_minutes %}, {{ change.after.late_minutes }} мин.{% endif %}<small>{{ change.after.comment }}</small></td><td>{{ change.explanation|default:'Первичное заполнение' }}</td></tr>{% empty %}<tr><td colspan="5">Изменения не найдены.</td></tr>{% endfor %}</tbody></table></div></section>
+<p class="muted">Выберите даты занятий. Изменения показаны от новых к старым.</p>
+<section class="panel">
+  {% include 'includes/filters.html' %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Когда и кто</th><th>Студент и занятие</th><th>Было</th><th>Стало</th><th>Основание</th></tr></thead>
+    <tbody>{% for change in records %}
+      <tr>
+        <td>{{ change.created_at|date:'d.m.Y H:i:s' }}<small>{{ change.author }}</small></td>
+        <td>{{ change.attendance.student }}<small><a href="{% url 'lesson_journal' change.attendance.lesson_id %}">{{ change.attendance.lesson.date|date:'d.m.Y' }} · {{ change.attendance.lesson.assignment.discipline }}</a></small></td>
+        <td>{{ change.before_text }}<small>{{ change.before.comment }}</small></td>
+        <td>{{ change.after_text }}<small>{{ change.after.comment }}</small></td>
+        <td>{{ change.explanation|default:'Первичное заполнение' }}</td>
+      </tr>
+    {% empty %}<tr><td colspan="5">Изменения не найдены.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% include 'includes/pagination.html' %}
+</section>
 {% endblock %}

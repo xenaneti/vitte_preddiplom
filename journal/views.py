@@ -13,6 +13,7 @@ from college.common import page_records, save_form
 from .services import save_marks, snapshot
 from .statistics import detailed_statistics, report_data
 from .export import excel_report
+from .history import describe_changes
 
 
 @login_required
@@ -65,7 +66,9 @@ def history(request):
     records = AttendanceChange.objects.filter(attendance__lesson__in=lessons).select_related('author', 'attendance__student', 'attendance__lesson__assignment__discipline')
     if form.is_valid() and form.cleaned_data.get('student'):
         records = records.filter(attendance__student=form.cleaned_data['student'])
-    return render(request, 'journal/history.html', {'records': records[:300], 'filter': form, 'title': 'История изменений', 'section': 'history'})
+    records = page_records(request, records)
+    describe_changes(records, dict(AbsenceReason.objects.values_list('id', 'name')))
+    return render(request, 'journal/history.html', {'records': records, 'filter': form, 'title': 'История изменений', 'section': 'history'})
 
 
 @login_required

@@ -30,7 +30,7 @@ def save_marks(user, lesson_id, rows, close=False):
     for student_id, data in rows:
         if student_id not in allowed_students:
             raise ValidationError('Студент не входил в группу на дату занятия.')
-        mark = Attendance.objects.filter(lesson=lesson, student_id=student_id).first()
+        mark = Attendance.objects.select_related('reason').filter(lesson=lesson, student_id=student_id).first()
         if data['version'] != (mark.version if mark else 0):
             raise ValidationError('Журнал уже изменён другим пользователем. Обновите страницу и повторите правку.')
         if not data.get('status'):
@@ -38,6 +38,7 @@ def save_marks(user, lesson_id, rows, close=False):
                 raise ValidationError('Сохранённую отметку нельзя заменить пустой ячейкой.')
             continue
         before = snapshot(mark)
+        previous_reason = mark.reason.name if mark and mark.reason else ''
         after = {'status': data['status'], 'late_minutes': data['late_minutes'], 'reason_id': data['reason'].pk if data.get('reason') else None, 'comment': data.get('comment', '')}
         if before == after:
             continue
@@ -62,6 +63,9 @@ def save_marks(user, lesson_id, rows, close=False):
         mark.updated_by = user
         mark.full_clean()
         mark.save()
+        if before:
+            before['reason_name'] = previous_reason
+        after['reason_name'] = mark.reason.name if mark.reason else ''
         AttendanceChange.objects.create(attendance=mark, author=user, before=before, after=after, explanation=explanation)
         changes += 1
     if close:
