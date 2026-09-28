@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -27,6 +28,8 @@ def tickets(request):
 @login_required
 def ticket_detail(request, pk):
     ticket = get_object_or_404(accessible_tickets(request.user), pk=pk)
+    if request.method == 'POST' and not request.user.is_administrator:
+        raise PermissionDenied
     form = None
     if request.user.is_administrator:
         form = ReplyForm(request.POST if request.method == 'POST' else None, instance=ticket)
