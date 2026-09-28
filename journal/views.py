@@ -9,6 +9,7 @@ from .filters import JournalFilter
 from .forms import MarkForm
 from .models import AttendanceChange
 from .services import save_marks, snapshot
+from .statistics import report_data
 
 
 @login_required
@@ -62,3 +63,11 @@ def history(request):
     if form.is_valid() and form.cleaned_data.get('student'):
         records = records.filter(attendance__student=form.cleaned_data['student'])
     return render(request, 'journal/history.html', {'records': records[:300], 'filter': form, 'title': 'История изменений', 'section': 'history'})
+
+
+@login_required
+def statistics(request):
+    form = JournalFilter(request.GET, request.user)
+    data = report_data(request.user, form)
+    data.update({'filter': form, 'title': 'Статистика посещаемости', 'section': 'statistics'})
+    return render(request, 'journal/statistics.html', data)
