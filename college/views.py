@@ -112,7 +112,7 @@ def lessons(request):
     from journal.filters import JournalFilter
     form = JournalFilter(request.GET, request.user)
     records = form.filter_lessons(visible_lessons(request.user))
-    return render(request, 'college/lessons.html', {'filter': form, 'records': records[:250], 'title': 'Занятия', 'section': 'lessons', 'subtitle': 'Расписание и состояние журналов за выбранный период'})
+    return render(request, 'college/lessons.html', {'filter': form, 'records': page_records(request, records), 'title': 'Занятия', 'section': 'lessons', 'subtitle': 'Расписание и состояние журналов за выбранный период'})
 
 
 @admin_required

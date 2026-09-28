@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
 {% block content %}
 <p class="muted">Выберите занятие, чтобы поставить отметки или просмотреть журнал. Незакрытые занятия не входят в итоговую статистику.</p>
-<section class="panel">{% include 'includes/filters.html' %}{% include 'college/lesson_table.html' %}</section>
+<section class="panel">{% include 'includes/filters.html' %}{% include 'college/lesson_table.html' %}{% include 'includes/pagination.html' %}</section>
 {% endblock %}

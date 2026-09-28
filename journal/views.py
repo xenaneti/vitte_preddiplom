@@ -20,7 +20,7 @@ from .history import describe_changes
 def journal(request):
     form = JournalFilter(request.GET, request.user)
     records = form.filter_lessons(visible_lessons(request.user))
-    return render(request, 'journal/list.html', {'filter': form, 'records': records[:250], 'title': 'Журнал посещаемости', 'section': 'journal'})
+    return render(request, 'journal/list.html', {'filter': form, 'records': page_records(request, records), 'title': 'Журнал посещаемости', 'section': 'journal'})
 
 
 @login_required
