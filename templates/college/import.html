@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="panel prose"><p>Скачайте образец, замените данные и сохраните файл в UTF-8. Даты указываются в формате ГГГГ-ММ-ДД. Существующие студенты не перезаписываются.</p><a href="{% url 'import_sample' %}">Скачать образец CSV</a></section>
+<form method="post" enctype="multipart/form-data" class="panel form-panel">{% csrf_token %}{% include 'includes/fields.html' %}<button name="action" value="preview">Проверить файл</button></form>
+{% if preview %}<section class="panel"><h2>Проверено записей: {{ preview|length }}</h2><p>Ошибок нет. Данные появятся в базе после подтверждения.</p><div class="table-wrap"><table><thead><tr><th>Номер</th><th>Студент</th><th>Дата зачисления</th></tr></thead><tbody>{% for row in preview %}<tr><td>{{ row.number }}</td><td>{{ row.last_name }} {{ row.first_name }} {{ row.middle_name }}</td><td>{{ row.admitted_at }}</td></tr>{% endfor %}</tbody></table></div><form method="post">{% csrf_token %}<button name="action" value="confirm">Добавить студентов</button></form></section>{% endif %}
+{% endblock %}

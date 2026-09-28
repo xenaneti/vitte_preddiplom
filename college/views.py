@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db import IntegrityError
+from django.http import HttpResponse
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -10,7 +12,7 @@ from django.utils import timezone
 from accounts.permissions import admin_required
 from .access import visible_disciplines, visible_groups, visible_lessons, visible_students
 from .common import form_page, page_records, save_form
-from .forms import AssignmentForm, DisciplineForm, GroupForm, LessonForm, SpecialtyForm, StudentCreateForm, StudentForm, TeacherForm, TransferForm
+from .forms import AssignmentForm, DisciplineForm, GroupForm, ImportForm, LessonForm, SpecialtyForm, StudentCreateForm, StudentForm, TeacherForm, TransferForm
 from .models import Discipline, Enrollment, Lesson, Specialty, Student, StudyGroup, Teacher, TeachingAssignment
 from .services import transfer_student
 
@@ -174,3 +176,42 @@ def assignment_edit(request, pk=None):
         for name in ['teacher', 'group', 'discipline']:
             form.fields[name].disabled = True
     return save_form(request, form, 'Назначение преподавателя', 'management', 'assignments')
+
+
+@admin_required
+def student_import(request):
+    from .importing import import_students, read_students
+    form = ImportForm(request.POST if request.method == 'POST' else None, request.FILES or None)
+    preview = None
+    if request.method == 'POST' and request.POST.get('action') == 'confirm':
+        saved = request.session.get('student_import')
+        if not saved or timezone.now().timestamp() - saved['created'] > 900:
+            messages.error(request, 'Предварительная проверка устарела. Загрузите файл заново.')
+        else:
+            group = get_object_or_404(StudyGroup, pk=saved['group'], is_active=True)
+            try:
+                count = import_students(saved['records'], group)
+            except (ValidationError, IntegrityError):
+                messages.error(request, 'Список не загружен: данные уже изменились. Проверьте номера студентов и повторите загрузку.')
+            else:
+                request.session.pop('student_import', None)
+                messages.success(request, f'Добавлено студентов: {count}.')
+                return redirect('students')
+    elif request.method == 'POST' and form.is_valid():
+        request.session.pop('student_import', None)
+        try:
+            preview = read_students(form.cleaned_data['file'])
+        except ValidationError as error:
+            form.add_error('file', error)
+        else:
+            request.session['student_import'] = {'records': preview, 'group': form.cleaned_data['group'].pk, 'created': timezone.now().timestamp()}
+    return render(request, 'college/import.html', {'form': form, 'preview': preview, 'title': 'Импорт студентов', 'section': 'management'})
+
+
+@admin_required
+def import_sample(request):
+    from .importing import HEADERS
+    text = ';'.join(HEADERS) + '\nDEMO-901;Соколов;Алексей;Игоревич;2008-05-12;student901@example.com;2026-09-01\n'
+    response = HttpResponse('\ufeff' + text, content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = 'attachment; filename="students_sample.csv"'
+    return response

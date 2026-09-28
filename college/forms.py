@@ -71,3 +71,8 @@ class TransferForm(forms.Form):
     group = forms.ModelChoiceField(label='Новая группа', queryset=StudyGroup.objects.filter(is_active=True))
     date = forms.DateField(label='Дата перевода', widget=DateInput(), initial=timezone.localdate)
     note = forms.CharField(label='Основание', max_length=200)
+
+
+class ImportForm(forms.Form):
+    group = forms.ModelChoiceField(label='Группа', queryset=StudyGroup.objects.filter(is_active=True))
+    file = forms.FileField(label='Список студентов в CSV', help_text='UTF-8, разделитель «;», не более 500 студентов и 1 МБ.')
