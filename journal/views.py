@@ -6,8 +6,10 @@ from django.urls import reverse
 
 from college.access import can_mark, lesson_students, visible_lessons
 from .filters import JournalFilter
-from .forms import MarkForm
-from .models import AttendanceChange
+from .forms import MarkForm, ReasonForm
+from .models import AbsenceReason, AttendanceChange
+from accounts.permissions import admin_required
+from college.common import save_form
 from .services import save_marks, snapshot
 from .statistics import report_data
 from .export import excel_report
@@ -87,3 +89,14 @@ def reports(request):
     query['format'] = 'xlsx'
     data.update({'filter': form, 'title': 'Отчёты', 'section': 'reports', 'export_query': query.urlencode()})
     return render(request, 'journal/reports.html', data)
+
+
+@admin_required
+def reasons(request):
+    return render(request, 'journal/reasons.html', {'records': AbsenceReason.objects.all(), 'title': 'Причины пропусков', 'section': 'management'})
+
+
+@admin_required
+def reason_edit(request, pk=None):
+    record = get_object_or_404(AbsenceReason, pk=pk) if pk else AbsenceReason()
+    return save_form(request, ReasonForm(request.POST or None, instance=record), 'Причина пропуска', 'management', 'reasons')

@@ -25,3 +25,9 @@ class MarkForm(forms.Form):
         if status != 'excused' and data.get('reason'):
             self.add_error('reason', 'Причина указывается для уважительного пропуска.')
         return data
+
+
+class ReasonForm(forms.ModelForm):
+    class Meta:
+        model = AbsenceReason
+        fields = ['code', 'name', 'description', 'needs_confirmation', 'is_active']
