@@ -15,8 +15,8 @@
 <div class="table-wrap"><table class="marks-table"><thead><tr><th>Студент</th><th>Отметка</th><th>Причина и комментарий</th><th>Основание исправления</th></tr></thead><tbody>
 {% for row in rows %}
 <tr><td><a href="{% url 'student_detail' row.student.pk %}">{{ row.student }}</a><small>{{ row.student.number }}</small>{{ row.form.version }}</td>
-<td>{{ row.form.status }}<div class="minutes">{{ row.form.late_minutes.label_tag }}{{ row.form.late_minutes }}</div></td>
-<td>{{ row.form.reason }}{{ row.form.comment }}</td><td>{{ row.form.explanation }}</td></tr>
+<td data-label="Отметка">{{ row.form.status }}<div class="minutes">{{ row.form.late_minutes.label_tag }}{{ row.form.late_minutes }}</div></td>
+<td data-label="Причина и комментарий">{{ row.form.reason }}{{ row.form.comment }}</td><td data-label="Основание исправления">{{ row.form.explanation }}</td></tr>
 {% if row.form.errors %}<tr><td colspan="4"><strong>{{ row.student }}</strong>{{ row.form.errors }}</td></tr>{% endif %}
 {% empty %}<tr><td colspan="4">На дату занятия в группе нет студентов.</td></tr>{% endfor %}
 </tbody></table></div>

@@ -112,5 +112,16 @@ footer { padding: 15px 32px; color: var(--muted); font-size: 12px; }
   .detail-list { grid-template-columns: 1fr; gap: 4px; }
   .detail-list dd { margin-bottom: 12px; }
   .daily-stats { grid-template-columns: 1fr; }
+  .marks-table { min-width: 0; }
+  .marks-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .marks-table tbody, .marks-table tr, .marks-table td { display: block; width: 100%; }
+  .marks-table tr { border: 1px solid var(--line); border-radius: 7px; margin-bottom: 16px; padding: 8px; }
+  .marks-table td { border: 0; padding: 6px; }
+  .marks-table td:first-child { background: var(--paper); margin-bottom: 6px; border-radius: 4px; }
+  .marks-table td[data-label]::before { content: attr(data-label); display: block; font-size: 12px; margin-bottom: 5px; color: var(--muted); }
+  .marks-table select, .marks-table input { font-size: 16px; }
+  .marks-table .minutes input { width: 75px; }
+  .journal-form .form-actions { position: sticky; bottom: 0; background: white; padding: 12px 0; border-top: 1px solid var(--line); }
+  .journal-form .form-actions button { flex: 1; }
 }
 @media (max-width: 400px) { .cards { gap: 10px; } .metric { padding: 13px; } .metric strong { font-size: 26px; } .user-panel { font-size: 11px; } }
