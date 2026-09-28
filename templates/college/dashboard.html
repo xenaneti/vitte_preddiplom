@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="cards"><div class="metric"><span>Доступно групп</span><strong>{{ group_count }}</strong></div><div class="metric"><span>Студентов</span><strong>{{ student_count }}</strong></div><div class="metric"><span>Посещаемость за месяц</span><strong>{% if totals.percentage is not None %}{{ totals.percentage }}%{% else %}—{% endif %}</strong></div><div class="metric"><span>Без уважительной причины</span><strong>{{ totals.absent }}</strong></div></div>
+<section class="panel"><h2>Занятия на сегодня</h2>{% include 'college/lesson_table.html' %}</section>
+<div class="grid"><section class="panel"><h2>Нужно заполнить журнал</h2>{% for lesson in pending %}<p><a href="{% url 'lesson_journal' lesson.pk %}">{{ lesson.date|date:'d.m.Y' }} · {{ lesson.assignment.group }} · {{ lesson.assignment.discipline }}</a></p>{% empty %}<p class="muted">Все прошедшие занятия закрыты.</p>{% endfor %}</section><section class="panel"><h2>Работа с журналом</h2><p>Отметки сохраняются после нажатия кнопки. Закройте журнал, когда заполните его для всех студентов.</p><p>Для сводки за период откройте «Статистику», для выгрузки — «Отчёты».</p><a href="{% url 'help' %}">Обозначения и правила расчёта</a></section></div>
+{% endblock %}

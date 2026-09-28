@@ -121,3 +121,56 @@ def lesson_edit(request, pk=None):
         for name in ['assignment', 'date', 'starts_at', 'ends_at']:
             form.fields[name].disabled = True
     return save_form(request, form, 'Изменить занятие' if pk else 'Новое занятие', 'lessons', 'lessons')
+
+
+@login_required
+def dashboard(request):
+    from journal.filters import JournalFilter
+    from journal.statistics import report_data
+    today = timezone.localdate()
+    data = report_data(request.user, JournalFilter({}, request.user))
+    data.update({
+        'title': 'Обзор', 'section': 'dashboard', 'subtitle': today.strftime('%d.%m.%Y'),
+        'records': visible_lessons(request.user).filter(date=today).order_by('starts_at'),
+        'pending': visible_lessons(request.user).filter(date__lte=today, state='planned')[:6],
+        'group_count': visible_groups(request.user).count(),
+        'student_count': visible_students(request.user).count(),
+    })
+    return render(request, 'college/dashboard.html', data)
+
+
+@login_required
+def help_page(request):
+    return render(request, 'college/help.html', {'title': 'Справка', 'section': 'help'})
+
+
+@admin_required
+def management(request):
+    return render(request, 'college/management.html', {'title': 'Управление', 'section': 'management'})
+
+
+@admin_required
+def specialties(request):
+    return render(request, 'college/specialties.html', {'records': Specialty.objects.all(), 'title': 'Специальности', 'section': 'management'})
+
+
+@admin_required
+def specialty_edit(request, pk=None):
+    record = get_object_or_404(Specialty, pk=pk) if pk else Specialty()
+    return save_form(request, SpecialtyForm(request.POST or None, instance=record), 'Специальность', 'management', 'specialties')
+
+
+@admin_required
+def assignments(request):
+    records = TeachingAssignment.objects.select_related('teacher__user', 'group', 'discipline')
+    return render(request, 'college/assignments.html', {'records': records, 'title': 'Назначения преподавателей', 'section': 'management'})
+
+
+@admin_required
+def assignment_edit(request, pk=None):
+    record = get_object_or_404(TeachingAssignment, pk=pk) if pk else TeachingAssignment()
+    form = AssignmentForm(request.POST or None, instance=record)
+    if pk and record.lessons.exists():
+        for name in ['teacher', 'group', 'discipline']:
+            form.fields[name].disabled = True
+    return save_form(request, form, 'Назначение преподавателя', 'management', 'assignments')
