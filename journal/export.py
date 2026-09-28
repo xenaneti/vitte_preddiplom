@@ -30,7 +30,13 @@ def excel_report(data, date_from, date_to):
     for mark in marks:
         assignment = mark.lesson.assignment
         append_row(details, [mark.lesson.date, assignment.group.code, str(mark.student), mark.student.number, assignment.discipline.name, str(assignment.teacher), mark.get_status_display(), mark.late_minutes, str(mark.reason) if mark.reason else '', mark.comment])
-    for sheet, header_row in [(summary, 2), (details, 1)]:
+    student_sheet = workbook.create_sheet('Студенты')
+    discipline_sheet = workbook.create_sheet('Дисциплины')
+    for sheet, rows in [(student_sheet, data.get('student_rows', [])), (discipline_sheet, data.get('discipline_rows', []))]:
+        append_row(sheet, ['Студент' if sheet == student_sheet else 'Дисциплина', 'Присутствия', 'Опоздания', 'Без причины', 'Уважительные', 'Всего', 'Посещаемость, %'])
+        for row in rows:
+            append_row(sheet, [row['name'], row['present'], row['late'], row['absent'], row['excused'], row['total'], row['percentage']])
+    for sheet, header_row in [(summary, 2), (details, 1), (student_sheet, 1), (discipline_sheet, 1)]:
         sheet.freeze_panes = f'A{header_row + 1}'
         sheet.auto_filter.ref = f'A{header_row}:{sheet.cell(sheet.max_row, sheet.max_column).coordinate}'
         for cell in sheet[header_row]:

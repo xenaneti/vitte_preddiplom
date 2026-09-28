@@ -3,4 +3,22 @@
 <section class="panel">{% include 'includes/filters.html' %}</section>
 <section class="panel">{% include 'journal/summary.html' %}</section>
 <p class="muted">Посещаемость — доля присутствий и опозданий среди отметок по проведённым занятиям. Уважительные пропуски учитываются отдельно, но не считаются присутствием. Единица расчёта — занятие.</p>
+<section class="panel">
+  <h2>По студентам</h2>
+  <p class="muted">Выделены значения ниже 75%. Это порог для просмотра пропусков, а не оценка успеваемости.</p>
+  {% include 'journal/breakdown.html' with detail_rows=student_rows name_label='Студент' %}
+  {% include 'includes/pagination.html' with records=student_rows %}
+</section>
+<section class="panel">
+  <h2>По дисциплинам</h2>
+  {% include 'journal/breakdown.html' with detail_rows=discipline_rows name_label='Дисциплина' %}
+</section>
+<section class="panel">
+  <h2>По дням</h2>
+  <div class="daily-stats">
+  {% for row in day_rows %}
+    <div class="day-stat"><time>{{ row.lesson__date|date:'d.m.Y' }}</time><progress value="{{ row.percentage|stringformat:'.1f' }}" max="100" aria-label="Посещаемость {{ row.lesson__date|date:'d.m.Y' }}">{{ row.percentage }}%</progress><span>{{ row.percentage }}%</span></div>
+  {% empty %}<p class="muted">Нет проведённых занятий за выбранный период.</p>{% endfor %}
+  </div>
+</section>
 {% endblock %}

@@ -9,9 +9,9 @@ from .filters import JournalFilter
 from .forms import MarkForm, ReasonForm
 from .models import AbsenceReason, AttendanceChange
 from accounts.permissions import admin_required
-from college.common import save_form
+from college.common import page_records, save_form
 from .services import save_marks, snapshot
-from .statistics import report_data
+from .statistics import detailed_statistics, report_data
 from .export import excel_report
 
 
@@ -72,6 +72,8 @@ def history(request):
 def statistics(request):
     form = JournalFilter(request.GET, request.user)
     data = report_data(request.user, form)
+    data.update(detailed_statistics(data['marks']))
+    data['student_rows'] = page_records(request, data['student_rows'])
     data.update({'filter': form, 'title': 'Статистика посещаемости', 'section': 'statistics'})
     return render(request, 'journal/statistics.html', data)
 
@@ -84,6 +86,7 @@ def reports(request):
         if data['marks'].count() > 50000:
             messages.error(request, 'Слишком много отметок. Сократите период или выберите группу.')
         else:
+            data.update(detailed_statistics(data['marks']))
             return excel_report(data, form.cleaned_data['date_from'], form.cleaned_data['date_to'])
     query = request.GET.copy()
     query['format'] = 'xlsx'

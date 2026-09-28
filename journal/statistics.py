@@ -32,3 +32,26 @@ def report_data(user, form):
         group['percentage'] = round(100 * (group['present'] + group['late']) / group['total'], 1)
         rows.append(group)
     return {'marks': marks, 'totals': totals(marks), 'groups': rows, 'unfinished': lessons.filter(state='planned').count()}
+
+
+def detailed_statistics(marks):
+    counts = {
+        'total': Count('id'),
+        'present': Count('id', filter=Q(status='present')),
+        'late': Count('id', filter=Q(status='late')),
+        'absent': Count('id', filter=Q(status='absent')),
+        'excused': Count('id', filter=Q(status='excused')),
+    }
+    students = list(marks.values('student_id', 'student__number', 'student__last_name',
+                                'student__first_name', 'student__middle_name').annotate(**counts)
+                    .order_by('student__last_name', 'student__first_name', 'student_id'))
+    disciplines = list(marks.values('lesson__assignment__discipline__name').annotate(**counts)
+                       .order_by('lesson__assignment__discipline__name'))
+    days = list(marks.values('lesson__date').annotate(**counts).order_by('lesson__date'))
+    for row in students:
+        row['name'] = ' '.join(filter(None, [row['student__last_name'], row['student__first_name'], row['student__middle_name']]))
+    for row in disciplines:
+        row['name'] = row['lesson__assignment__discipline__name']
+    for row in students + disciplines + days:
+        row['percentage'] = round(100 * (row['present'] + row['late']) / row['total'], 1)
+    return {'student_rows': students, 'discipline_rows': disciplines, 'day_rows': days}
