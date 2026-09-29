@@ -7,6 +7,9 @@ class User(AbstractUser):
     role = models.CharField('Роль', max_length=12, choices=ROLES, default='teacher')
     middle_name = models.CharField('Отчество', max_length=100, blank=True)
 
+    class Meta(AbstractUser.Meta):
+        constraints = [models.CheckConstraint(condition=models.Q(role__in=['admin', 'teacher', 'curator']), name='user_role_valid')]
+
     @property
     def is_administrator(self):
         return self.is_active and (self.is_superuser or self.role == 'admin')
@@ -15,6 +18,8 @@ class User(AbstractUser):
         if self.is_superuser:
             self.role = 'admin'
         self.is_staff = self.role == 'admin'
+        if kwargs.get('update_fields') is not None:
+            kwargs['update_fields'] = set(kwargs['update_fields']) | {'role', 'is_staff'}
         super().save(*args, **kwargs)
 
     def get_full_name(self):

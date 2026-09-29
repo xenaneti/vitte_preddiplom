@@ -60,6 +60,7 @@ class Student(models.Model):
         ordering = ['last_name', 'first_name', 'id']
         verbose_name = 'студент'
         verbose_name_plural = 'студенты'
+        constraints = [models.CheckConstraint(condition=Q(birth_date__lt=F('admitted_at')), name='student_birth_before_admission')]
 
     def clean(self):
         if self.birth_date and self.admitted_at and self.birth_date >= self.admitted_at:
@@ -79,7 +80,10 @@ class Enrollment(models.Model):
 
     class Meta:
         ordering = ['-started_on']
-        constraints = [models.CheckConstraint(condition=Q(ended_on__isnull=True) | Q(ended_on__gte=F('started_on')), name='enrollment_dates_order')]
+        constraints = [
+            models.CheckConstraint(condition=Q(ended_on__isnull=True) | Q(ended_on__gte=F('started_on')), name='enrollment_dates_order'),
+            models.UniqueConstraint(fields=['student'], condition=Q(ended_on__isnull=True), name='student_one_open_enrollment'),
+        ]
         indexes = [models.Index(fields=['group', 'started_on'])]
 
     def clean(self):
@@ -184,7 +188,10 @@ class Lesson(models.Model):
         ordering = ['-date', 'starts_at', 'id']
         verbose_name = 'занятие'
         verbose_name_plural = 'занятия'
-        constraints = [models.CheckConstraint(condition=Q(ends_at__gt=F('starts_at')), name='lesson_time_order')]
+        constraints = [
+            models.CheckConstraint(condition=Q(ends_at__gt=F('starts_at')), name='lesson_time_order'),
+            models.CheckConstraint(condition=Q(state__in=['planned', 'completed', 'cancelled']), name='lesson_state_valid'),
+        ]
         indexes = [models.Index(fields=['date', 'state'])]
 
     def clean(self):

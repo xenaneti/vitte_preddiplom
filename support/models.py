@@ -14,6 +14,7 @@ class Ticket(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        constraints = [models.CheckConstraint(condition=models.Q(status__in=['new', 'active', 'closed']), name='ticket_status_valid')]
 
     def __str__(self):
         return self.subject

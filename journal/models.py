@@ -36,6 +36,7 @@ class Attendance(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['lesson', 'student'], name='unique_lesson_student'),
+            models.CheckConstraint(condition=Q(version__gte=1), name='attendance_version_positive'),
             models.CheckConstraint(condition=Q(status__in=['present', 'absent', 'late', 'excused']), name='attendance_status_valid'),
             models.CheckConstraint(condition=(Q(status='late', late_minutes__gte=1, late_minutes__lte=180) | (~Q(status='late') & Q(late_minutes=0))), name='attendance_minutes_valid'),
             models.CheckConstraint(condition=(Q(status='excused', reason__isnull=False) | (~Q(status='excused') & Q(reason__isnull=True))), name='attendance_reason_valid'),
