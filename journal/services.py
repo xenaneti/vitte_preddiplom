@@ -43,6 +43,9 @@ def save_marks(user, lesson_id, rows, close=False):
         if before == after:
             continue
         explanation = data.get('explanation', '').strip()
+        reason = data.get('reason')
+        if reason and not reason.is_active and (not mark or mark.reason_id != reason.pk):
+            raise ValidationError('Эта причина пропуска больше не используется. Выберите действующую.')
         if not teacher_access:
             if not mark or mark.status not in ('absent', 'excused') or after['status'] not in ('absent', 'excused'):
                 raise PermissionDenied('Куратор уточняет только причины пропусков своей группы.')

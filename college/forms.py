@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 from django.utils import timezone
 
 from accounts.models import User
@@ -24,6 +25,11 @@ class StudentCreateForm(StudentForm):
 
 
 class GroupForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['specialty'].queryset = Specialty.objects.filter(Q(is_active=True) | Q(pk=self.instance.specialty_id))
+        self.fields['curator'].queryset = User.objects.filter(role='curator').filter(Q(is_active=True) | Q(pk=self.instance.curator_id))
+
     class Meta:
         model = StudyGroup
         fields = ['code', 'name', 'specialty', 'admission_year', 'graduation_year', 'study_form', 'curator', 'is_active']
@@ -36,6 +42,12 @@ class SpecialtyForm(forms.ModelForm):
 
 
 class TeacherForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['user'].queryset = User.objects.filter(role='teacher').filter(Q(is_active=True) | Q(pk=self.instance.user_id))
+        if self.instance.pk:
+            self.fields['user'].disabled = True
+
     class Meta:
         model = Teacher
         fields = ['user', 'staff_number', 'department', 'position', 'qualification', 'hired_on', 'phone', 'is_active']
@@ -50,6 +62,12 @@ class DisciplineForm(forms.ModelForm):
 
 
 class AssignmentForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['teacher'].queryset = Teacher.objects.filter(Q(is_active=True, user__is_active=True) | Q(pk=self.instance.teacher_id)).select_related('user')
+        self.fields['group'].queryset = StudyGroup.objects.filter(Q(is_active=True) | Q(pk=self.instance.group_id))
+        self.fields['discipline'].queryset = Discipline.objects.filter(Q(is_active=True) | Q(pk=self.instance.discipline_id))
+
     class Meta:
         model = TeachingAssignment
         fields = ['teacher', 'group', 'discipline', 'started_on', 'ended_on', 'is_active']
@@ -64,7 +82,8 @@ class LessonForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['assignment'].queryset = TeachingAssignment.objects.filter(is_active=True).select_related('teacher__user', 'group', 'discipline')
+        available = Q(is_active=True, group__is_active=True, discipline__is_active=True, teacher__is_active=True, teacher__user__is_active=True)
+        self.fields['assignment'].queryset = TeachingAssignment.objects.filter(available | Q(pk=self.instance.assignment_id)).select_related('teacher__user', 'group', 'discipline')
 
 
 class TransferForm(forms.Form):

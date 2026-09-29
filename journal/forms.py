@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 
 from .models import AbsenceReason, Attendance
 
@@ -10,6 +11,10 @@ class MarkForm(forms.Form):
     comment = forms.CharField(label='Комментарий', max_length=300, required=False)
     explanation = forms.CharField(label='Причина исправления', max_length=300, required=False)
     version = forms.IntegerField(widget=forms.HiddenInput, min_value=0, initial=0)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['reason'].queryset = AbsenceReason.objects.filter(Q(is_active=True) | Q(pk=self.initial.get('reason')))
 
     def clean(self):
         data = super().clean()
