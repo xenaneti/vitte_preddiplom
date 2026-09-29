@@ -1,8 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-<form method="post" class="panel form-panel" {% if upload %}enctype="multipart/form-data"{% endif %}>
-  {% csrf_token %}
-  {% include 'includes/fields.html' %}
-  <div class="form-actions"><button type="submit">{{ submit_label|default:"Сохранить" }}</button>{% if back_url %}<a class="button secondary" href="{{ back_url }}">Отмена</a>{% endif %}</div>
-</form>
+  <form method="post"
+        class="panel form-panel"
+        {% if upload %}enctype="multipart/form-data"{% endif %}>
+    {% csrf_token %}
+    {% include 'includes/fields.html' %}
+    <div class="form-actions">
+      <button type="submit">{{ submit_label|default:"Сохранить" }}</button>
+      {% if back_url %}<a class="button secondary" href="{{ back_url }}">Отмена</a>{% endif %}
+    </div>
+  </form>
 {% endblock %}

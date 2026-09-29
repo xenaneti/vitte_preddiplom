@@ -1,7 +1,11 @@
 {% if records.paginator.num_pages > 1 %}
-<nav class="pagination" aria-label="Страницы списка">
-  {% if records.has_previous %}<a href="{% querystring page=records.previous_page_number %}">Назад</a>{% endif %}
-  <span>{{ records.number }} из {{ records.paginator.num_pages }} · записей: {{ records.paginator.count }}</span>
-  {% if records.has_next %}<a href="{% querystring page=records.next_page_number %}">Далее</a>{% endif %}
-</nav>
+  <nav class="pagination" aria-label="Страницы списка">
+    {% if records.has_previous %}
+      <a href="{% querystring page=records.previous_page_number %}">Назад</a>
+    {% endif %}
+    <span>{{ records.number }} из {{ records.paginator.num_pages }} · записей: {{ records.paginator.count }}</span>
+    {% if records.has_next %}
+      <a href="{% querystring page=records.next_page_number %}">Далее</a>
+    {% endif %}
+  </nav>
 {% endif %}

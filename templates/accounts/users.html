@@ -1,3 +1,30 @@
 {% extends 'base.html' %}
-{% block actions %}<a class="button" href="{% url 'user_create' %}">Добавить пользователя</a>{% endblock %}
-{% block content %}<div class="panel table-wrap"><table><thead><tr><th>Пользователь</th><th>Логин</th><th>Роль</th><th>Доступ</th></tr></thead><tbody>{% for record in records %}<tr><td><a href="{% url 'user_edit' record.pk %}">{{ record.get_full_name }}</a></td><td>{{ record.username }}</td><td>{{ record.get_role_display }}</td><td>{{ record.is_active|yesno:'Открыт,Отключён' }}</td></tr>{% endfor %}</tbody></table></div>{% endblock %}
+{% block actions %}
+  <a class="button" href="{% url 'user_create' %}">Добавить пользователя</a>
+{% endblock %}
+{% block content %}
+  <div class="panel table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Пользователь</th>
+          <th>Логин</th>
+          <th>Роль</th>
+          <th>Доступ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+          <tr>
+            <td>
+              <a href="{% url 'user_edit' record.pk %}">{{ record.get_full_name }}</a>
+            </td>
+            <td>{{ record.username }}</td>
+            <td>{{ record.get_role_display }}</td>
+            <td>{{ record.is_active|yesno:'Открыт,Отключён' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -3,13 +3,13 @@ from .models import Attendance
 
 def describe_mark(values, reasons):
     if not values:
-        return 'Не отмечено'
-    text = dict(Attendance.STATUSES).get(values.get('status'), 'Неизвестная отметка')
-    if values.get('late_minutes'):
+        return "Не отмечено"
+    text = dict(Attendance.STATUSES).get(values.get("status"), "Неизвестная отметка")
+    if values.get("late_minutes"):
         text += f', {values["late_minutes"]} мин.'
-    reason = values.get('reason_name') or reasons.get(values.get('reason_id'), '')
+    reason = values.get("reason_name") or reasons.get(values.get("reason_id"), "")
     if reason:
-        text += f': {reason}'
+        text += f": {reason}"
     return text
 
 

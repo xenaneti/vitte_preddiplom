@@ -21,109 +21,192 @@ from .matrix import MatrixFilter, group_matrix
 def journal(request):
     form = JournalFilter(request.GET, request.user)
     records = form.filter_lessons(visible_lessons(request.user))
-    return render(request, 'journal/list.html', {'filter': form, 'records': page_records(request, records), 'title': 'Журнал посещаемости', 'section': 'journal'})
+    return render(
+        request,
+        "journal/list.html",
+        {
+            "filter": form,
+            "records": page_records(request, records),
+            "title": "Журнал посещаемости",
+            "section": "journal",
+        },
+    )
 
 
 @login_required
 def matrix(request):
     form = MatrixFilter(request.GET, request.user)
     if not request.GET:
-        form.fields['group'].required = False
-    data = {'columns': [], 'rows': []}
+        form.fields["group"].required = False
+    data = {"columns": [], "rows": []}
     if request.GET:
         try:
             data = group_matrix(request.user, form)
         except ValidationError as error:
             form.add_error(None, error)
-        if request.GET.get('format') == 'xlsx' and form.is_valid() and data['columns']:
+        if request.GET.get("format") == "xlsx" and form.is_valid() and data["columns"]:
             values = form.cleaned_data
-            return matrix_report(data, values['group'], values['date_from'], values['date_to'])
+            return matrix_report(
+                data, values["group"], values["date_from"], values["date_to"]
+            )
     query = request.GET.copy()
-    query['format'] = 'xlsx'
-    data.update({'filter': form, 'export_query': query.urlencode(), 'title': 'Журнал группы', 'section': 'journal', 'breadcrumbs': [('Журнал', reverse('journal'))]})
-    return render(request, 'journal/matrix.html', data)
+    query["format"] = "xlsx"
+    data.update(
+        {
+            "filter": form,
+            "export_query": query.urlencode(),
+            "title": "Журнал группы",
+            "section": "journal",
+            "breadcrumbs": [("Журнал", reverse("journal"))],
+        }
+    )
+    return render(request, "journal/matrix.html", data)
 
 
 @login_required
 def lesson_journal(request, pk):
     lesson = get_object_or_404(visible_lessons(request.user), pk=pk)
-    marks = {mark.student_id: mark for mark in lesson.marks.select_related('reason')}
+    marks = {mark.student_id: mark for mark in lesson.marks.select_related("reason")}
     rows = []
     teacher_access = can_mark(request.user, lesson)
     for student in lesson_students(lesson):
         mark = marks.get(student.pk)
         initial = snapshot(mark)
-        initial['reason'] = initial.pop('reason_id', None)
-        initial['version'] = mark.version if mark else 0
-        form = MarkForm(request.POST if request.method == 'POST' else None, prefix=f's{student.pk}', initial=initial)
-        editable = teacher_access or (mark and mark.status in ('absent', 'excused'))
-        if not editable or lesson.state == 'cancelled':
+        initial["reason"] = initial.pop("reason_id", None)
+        initial["version"] = mark.version if mark else 0
+        form = MarkForm(
+            request.POST if request.method == "POST" else None,
+            prefix=f"s{student.pk}",
+            initial=initial,
+        )
+        editable = teacher_access or (mark and mark.status in ("absent", "excused"))
+        if not editable or lesson.state == "cancelled":
             for field in form.fields.values():
                 field.disabled = True
         if not teacher_access and editable:
-            form.fields['status'].choices = [('absent', 'Отсутствовал'), ('excused', 'Уважительная причина')]
-            form.fields['late_minutes'].disabled = True
+            form.fields["status"].choices = [
+                ("absent", "Отсутствовал"),
+                ("excused", "Уважительная причина"),
+            ]
+            form.fields["late_minutes"].disabled = True
         for field in form.fields.values():
-            field.widget.attrs['aria-label'] = f'{student}: {field.label}'
-        rows.append({'student': student, 'form': form, 'mark': mark, 'editable': editable})
-    if request.method == 'POST':
-        valid = all([row['form'].is_valid() for row in rows])
+            field.widget.attrs["aria-label"] = f"{student}: {field.label}"
+        rows.append(
+            {"student": student, "form": form, "mark": mark, "editable": editable}
+        )
+    if request.method == "POST":
+        valid = all([row["form"].is_valid() for row in rows])
         if valid:
-            data = [(row['student'].pk, row['form'].cleaned_data) for row in rows]
+            data = [(row["student"].pk, row["form"].cleaned_data) for row in rows]
             try:
-                changes = save_marks(request.user, pk, data, close=request.POST.get('action') == 'close')
+                changes = save_marks(
+                    request.user, pk, data, close=request.POST.get("action") == "close"
+                )
             except ValidationError as error:
-                messages.error(request, ' '.join(error.messages))
+                messages.error(request, " ".join(error.messages))
             else:
-                messages.success(request, f'Журнал сохранён. Изменено отметок: {changes}.')
-                return redirect('lesson_journal', pk=pk)
-    return render(request, 'journal/lesson.html', {'lesson': lesson, 'rows': rows, 'teacher_access': teacher_access, 'title': 'Журнал занятия', 'section': 'journal', 'breadcrumbs': [('Журнал', reverse('journal'))]})
+                messages.success(
+                    request, f"Журнал сохранён. Изменено отметок: {changes}."
+                )
+                return redirect("lesson_journal", pk=pk)
+    return render(
+        request,
+        "journal/lesson.html",
+        {
+            "lesson": lesson,
+            "rows": rows,
+            "teacher_access": teacher_access,
+            "title": "Журнал занятия",
+            "section": "journal",
+            "breadcrumbs": [("Журнал", reverse("journal"))],
+        },
+    )
 
 
 @login_required
 def history(request):
     form = JournalFilter(request.GET, request.user)
     lessons = form.filter_lessons(visible_lessons(request.user))
-    records = AttendanceChange.objects.filter(attendance__lesson__in=lessons).select_related('author', 'attendance__student', 'attendance__lesson__assignment__discipline')
-    if form.is_valid() and form.cleaned_data.get('student'):
-        records = records.filter(attendance__student=form.cleaned_data['student'])
+    records = AttendanceChange.objects.filter(
+        attendance__lesson__in=lessons
+    ).select_related(
+        "author", "attendance__student", "attendance__lesson__assignment__discipline"
+    )
+    if form.is_valid() and form.cleaned_data.get("student"):
+        records = records.filter(attendance__student=form.cleaned_data["student"])
     records = page_records(request, records)
-    describe_changes(records, dict(AbsenceReason.objects.values_list('id', 'name')))
-    return render(request, 'journal/history.html', {'records': records, 'filter': form, 'title': 'История изменений', 'section': 'history'})
+    describe_changes(records, dict(AbsenceReason.objects.values_list("id", "name")))
+    return render(
+        request,
+        "journal/history.html",
+        {
+            "records": records,
+            "filter": form,
+            "title": "История изменений",
+            "section": "history",
+        },
+    )
 
 
 @login_required
 def statistics(request):
     form = JournalFilter(request.GET, request.user)
     data = report_data(request.user, form)
-    data.update(detailed_statistics(data['marks']))
-    data['student_rows'] = page_records(request, data['student_rows'])
-    data.update({'filter': form, 'title': 'Статистика посещаемости', 'section': 'statistics'})
-    return render(request, 'journal/statistics.html', data)
+    data.update(detailed_statistics(data["marks"]))
+    data["student_rows"] = page_records(request, data["student_rows"])
+    data.update(
+        {"filter": form, "title": "Статистика посещаемости", "section": "statistics"}
+    )
+    return render(request, "journal/statistics.html", data)
 
 
 @login_required
 def reports(request):
     form = JournalFilter(request.GET, request.user)
     data = report_data(request.user, form)
-    if request.GET.get('format') == 'xlsx' and form.is_valid():
-        if data['marks'].count() > 50000:
-            messages.error(request, 'Слишком много отметок. Сократите период или выберите группу.')
+    if request.GET.get("format") == "xlsx" and form.is_valid():
+        if data["marks"].count() > 50000:
+            messages.error(
+                request, "Слишком много отметок. Сократите период или выберите группу."
+            )
         else:
-            data.update(detailed_statistics(data['marks']))
-            return excel_report(data, form.cleaned_data['date_from'], form.cleaned_data['date_to'])
+            data.update(detailed_statistics(data["marks"]))
+            return excel_report(
+                data, form.cleaned_data["date_from"], form.cleaned_data["date_to"]
+            )
     query = request.GET.copy()
-    query['format'] = 'xlsx'
-    data.update({'filter': form, 'title': 'Отчёты', 'section': 'reports', 'export_query': query.urlencode()})
-    return render(request, 'journal/reports.html', data)
+    query["format"] = "xlsx"
+    data.update(
+        {
+            "filter": form,
+            "title": "Отчёты",
+            "section": "reports",
+            "export_query": query.urlencode(),
+        }
+    )
+    return render(request, "journal/reports.html", data)
 
 
 @admin_required
 def reasons(request):
-    return render(request, 'journal/reasons.html', {'records': AbsenceReason.objects.all(), 'title': 'Причины пропусков', 'section': 'management'})
+    return render(
+        request,
+        "journal/reasons.html",
+        {
+            "records": AbsenceReason.objects.all(),
+            "title": "Причины пропусков",
+            "section": "management",
+        },
+    )
 
 
 @admin_required
 def reason_edit(request, pk=None):
     record = get_object_or_404(AbsenceReason, pk=pk) if pk else AbsenceReason()
-    return save_form(request, ReasonForm(request.POST or None, instance=record), 'Причина пропуска', 'management', 'reasons')
+    return save_form(
+        request,
+        ReasonForm(request.POST or None, instance=record),
+        "Причина пропуска",
+        "management",
+        "reasons",
+    )

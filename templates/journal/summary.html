@@ -1,8 +1,53 @@
 <div class="cards">
-<div class="metric"><span>Посещаемость</span><strong>{% if totals.percentage is not None %}{{ totals.percentage }}%{% else %}—{% endif %}</strong></div>
-<div class="metric"><span>Присутствия</span><strong>{{ totals.present }}</strong></div>
-<div class="metric"><span>Пропуски без причины</span><strong>{{ totals.absent }}</strong></div>
-<div class="metric"><span>Уважительные пропуски</span><strong>{{ totals.excused }}</strong></div>
+  <div class="metric">
+    <span>Посещаемость</span><strong>
+      {% if totals.percentage is not None %}
+        {{ totals.percentage }}%
+      {% else %}
+        —
+      {% endif %}
+    </strong>
+  </div>
+  <div class="metric">
+    <span>Присутствия</span><strong>{{ totals.present }}</strong>
+  </div>
+  <div class="metric">
+    <span>Пропуски без причины</span><strong>{{ totals.absent }}</strong>
+  </div>
+  <div class="metric">
+    <span>Уважительные пропуски</span><strong>{{ totals.excused }}</strong>
+  </div>
 </div>
-<p class="muted">Опозданий: {{ totals.late }}. Всего отметок: {{ totals.total }}. Незакрытых занятий за период: {{ unfinished }}.</p>
-<div class="table-wrap"><table><thead><tr><th>Группа</th><th>Присутствия</th><th>Опоздания</th><th>Без причины</th><th>Уважительные</th><th>Посещаемость</th></tr></thead><tbody>{% for group in groups %}<tr><td>{{ group.name }}</td><td>{{ group.present }}</td><td>{{ group.late }}</td><td>{{ group.absent }}</td><td>{{ group.excused }}</td><td>{{ group.percentage }}%</td></tr>{% empty %}<tr><td colspan="6">Нет отметок по проведённым занятиям.</td></tr>{% endfor %}</tbody></table></div>
+<p class="muted">
+  Опозданий: {{ totals.late }}. Всего отметок: {{ totals.total }}. Незакрытых занятий за период: {{ unfinished }}.
+</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Группа</th>
+        <th>Присутствия</th>
+        <th>Опоздания</th>
+        <th>Без причины</th>
+        <th>Уважительные</th>
+        <th>Посещаемость</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for group in groups %}
+        <tr>
+          <td>{{ group.name }}</td>
+          <td>{{ group.present }}</td>
+          <td>{{ group.late }}</td>
+          <td>{{ group.absent }}</td>
+          <td>{{ group.excused }}</td>
+          <td>{{ group.percentage }}%</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6">Нет отметок по проведённым занятиям.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

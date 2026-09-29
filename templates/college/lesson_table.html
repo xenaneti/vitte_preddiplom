@@ -1,1 +1,34 @@
-<div class="table-wrap"><table><thead><tr><th>Дата и время</th><th>Группа и дисциплина</th><th>Преподаватель</th><th>Тема</th><th>Состояние</th></tr></thead><tbody>{% for lesson in records %}<tr><td class="nowrap"><a href="{% url 'lesson_journal' lesson.pk %}">{{ lesson.date|date:'d.m.Y' }}</a><small>{{ lesson.starts_at|time:'H:i' }}–{{ lesson.ends_at|time:'H:i' }} · {{ lesson.room }}</small></td><td>{{ lesson.assignment.group }}<small>{{ lesson.assignment.discipline }}</small></td><td>{{ lesson.assignment.teacher }}</td><td>{{ lesson.topic }}</td><td><span class="badge {{ lesson.state }}">{{ lesson.get_state_display }}</span></td></tr>{% empty %}<tr><td colspan="5">В выбранном периоде нет доступных занятий.</td></tr>{% endfor %}</tbody></table></div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Дата и время</th>
+        <th>Группа и дисциплина</th>
+        <th>Преподаватель</th>
+        <th>Тема</th>
+        <th>Состояние</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for lesson in records %}
+        <tr>
+          <td class="nowrap">
+            <a href="{% url 'lesson_journal' lesson.pk %}">{{ lesson.date|date:'d.m.Y' }}</a><small>{{ lesson.starts_at|time:'H:i' }}–{{ lesson.ends_at|time:'H:i' }} · {{ lesson.room }}</small>
+          </td>
+          <td>
+            {{ lesson.assignment.group }}<small>{{ lesson.assignment.discipline }}</small>
+          </td>
+          <td>{{ lesson.assignment.teacher }}</td>
+          <td>{{ lesson.topic }}</td>
+          <td>
+            <span class="badge {{ lesson.state }}">{{ lesson.get_state_display }}</span>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5">В выбранном периоде нет доступных занятий.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

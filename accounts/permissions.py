@@ -11,4 +11,5 @@ def admin_required(view):
         if not request.user.is_administrator:
             raise PermissionDenied
         return view(request, *args, **kwargs)
+
     return checked

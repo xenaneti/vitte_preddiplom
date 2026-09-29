@@ -1,3 +1,13 @@
 {% extends 'base.html' %}
-{% block actions %}{% if user.is_administrator %}<a class="button" href="{% url 'lesson_create' %}">Добавить занятие</a>{% endif %}{% endblock %}
-{% block content %}<section class="panel">{% include 'includes/filters.html' %}{% include 'college/lesson_table.html' %}{% include 'includes/pagination.html' %}</section>{% endblock %}
+{% block actions %}
+  {% if user.is_administrator %}
+    <a class="button" href="{% url 'lesson_create' %}">Добавить занятие</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+  <section class="panel">
+    {% include 'includes/filters.html' %}
+    {% include 'college/lesson_table.html' %}
+    {% include 'includes/pagination.html' %}
+  </section>
+{% endblock %}

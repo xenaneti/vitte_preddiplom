@@ -1,10 +1,12 @@
 {% if form.non_field_errors %}<div class="notice error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
 {% for field in form %}
-  {% if field.is_hidden %}{{ field }}{% else %}
-  <div class="field {% if field.errors %}invalid{% endif %}">
-    {{ field.label_tag }}{{ field }}
-    {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
-    {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
-  </div>
+  {% if field.is_hidden %}
+    {{ field }}
+  {% else %}
+    <div class="field {% if field.errors %}invalid{% endif %}">
+      {{ field.label_tag }}{{ field }}
+      {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+      {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+    </div>
   {% endif %}
 {% endfor %}

@@ -1,3 +1,30 @@
 {% extends 'base.html' %}
-{% block actions %}<a class="button" href="{% url 'reason_create' %}">Добавить причину</a>{% endblock %}
-{% block content %}<div class="panel table-wrap"><table><thead><tr><th>Причина</th><th>Пояснение</th><th>Нужно подтверждение</th><th>Используется</th></tr></thead><tbody>{% for record in records %}<tr><td><a href="{% url 'reason_edit' record.pk %}">{{ record }}</a></td><td>{{ record.description }}</td><td>{{ record.needs_confirmation|yesno:'Да,Нет' }}</td><td>{{ record.is_active|yesno:'Да,Нет' }}</td></tr>{% endfor %}</tbody></table></div>{% endblock %}
+{% block actions %}
+  <a class="button" href="{% url 'reason_create' %}">Добавить причину</a>
+{% endblock %}
+{% block content %}
+  <div class="panel table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Причина</th>
+          <th>Пояснение</th>
+          <th>Нужно подтверждение</th>
+          <th>Используется</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+          <tr>
+            <td>
+              <a href="{% url 'reason_edit' record.pk %}">{{ record }}</a>
+            </td>
+            <td>{{ record.description }}</td>
+            <td>{{ record.needs_confirmation|yesno:'Да,Нет' }}</td>
+            <td>{{ record.is_active|yesno:'Да,Нет' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

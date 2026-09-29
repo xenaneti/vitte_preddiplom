@@ -1,53 +1,98 @@
 {% load static %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>{{ title|default:"Журнал посещаемости" }} · Колледж</title>
-  <link rel="stylesheet" href="{% static 'css/site.css' %}">
-  <script src="{% static 'js/site.js' %}" defer></script>
-</head>
-<body>
-<a class="skip" href="#content">Перейти к содержимому</a>
-{% if user.is_authenticated %}
-<aside class="sidebar" id="navigation">
-  <a class="brand" href="{% url 'dashboard' %}"><span class="brand-icon">К</span><span>Учебный колледж<small>Журнал посещаемости</small></span></a>
-  <nav aria-label="Основные разделы">
-    <a href="{% url 'dashboard' %}" {% if section == 'dashboard' %}aria-current="page"{% endif %}>Обзор</a>
-    <a href="{% url 'lessons' %}" {% if section == 'lessons' %}aria-current="page"{% endif %}>Занятия</a>
-    <a href="{% url 'journal' %}" {% if section == 'journal' %}aria-current="page"{% endif %}>Журнал</a>
-    <a href="{% url 'students' %}" {% if section == 'students' %}aria-current="page"{% endif %}>Студенты</a>
-    <a href="{% url 'groups' %}" {% if section == 'groups' %}aria-current="page"{% endif %}>Группы</a>
-    <a href="{% url 'disciplines' %}" {% if section == 'disciplines' %}aria-current="page"{% endif %}>Дисциплины</a>
-    <a href="{% url 'statistics' %}" {% if section == 'statistics' %}aria-current="page"{% endif %}>Статистика</a>
-    <a href="{% url 'reports' %}" {% if section == 'reports' %}aria-current="page"{% endif %}>Отчёты</a>
-    <a href="{% url 'history' %}" {% if section == 'history' %}aria-current="page"{% endif %}>История изменений</a>
-    <a href="{% url 'profile' %}" {% if section == 'profile' %}aria-current="page"{% endif %}>Личный кабинет</a>
-    <a href="{% url 'tickets' %}" {% if section == 'tickets' %}aria-current="page"{% endif %}>Обратная связь</a>
-    <a href="{% url 'help' %}" {% if section == 'help' %}aria-current="page"{% endif %}>Справка</a>
-    {% if user.is_administrator %}
-    <a href="{% url 'teachers' %}" {% if section == 'teachers' %}aria-current="page"{% endif %}>Преподаватели</a>
-    <a href="{% url 'management' %}" {% if section == 'management' %}aria-current="page"{% endif %}>Управление</a>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ title|default:"Журнал посещаемости" }} · Колледж</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <script src="{% static 'js/site.js' %}" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#content">Перейти к содержимому</a>
+    {% if user.is_authenticated %}
+      <aside class="sidebar" id="navigation">
+        <a class="brand" href="{% url 'dashboard' %}"><span class="brand-icon">К</span><span>Учебный колледж<small>Журнал посещаемости</small></span></a>
+        <nav aria-label="Основные разделы">
+          <a href="{% url 'dashboard' %}"
+             {% if section == 'dashboard' %}aria-current="page"{% endif %}>Обзор</a>
+          <a href="{% url 'lessons' %}"
+             {% if section == 'lessons' %}aria-current="page"{% endif %}>Занятия</a>
+          <a href="{% url 'journal' %}"
+             {% if section == 'journal' %}aria-current="page"{% endif %}>Журнал</a>
+          <a href="{% url 'students' %}"
+             {% if section == 'students' %}aria-current="page"{% endif %}>Студенты</a>
+          <a href="{% url 'groups' %}"
+             {% if section == 'groups' %}aria-current="page"{% endif %}>Группы</a>
+          <a href="{% url 'disciplines' %}"
+             {% if section == 'disciplines' %}aria-current="page"{% endif %}>Дисциплины</a>
+          <a href="{% url 'statistics' %}"
+             {% if section == 'statistics' %}aria-current="page"{% endif %}>Статистика</a>
+          <a href="{% url 'reports' %}"
+             {% if section == 'reports' %}aria-current="page"{% endif %}>Отчёты</a>
+          <a href="{% url 'history' %}"
+             {% if section == 'history' %}aria-current="page"{% endif %}>История изменений</a>
+          <a href="{% url 'profile' %}"
+             {% if section == 'profile' %}aria-current="page"{% endif %}>Личный кабинет</a>
+          <a href="{% url 'tickets' %}"
+             {% if section == 'tickets' %}aria-current="page"{% endif %}>Обратная связь</a>
+          <a href="{% url 'help' %}"
+             {% if section == 'help' %}aria-current="page"{% endif %}>Справка</a>
+          {% if user.is_administrator %}
+            <a href="{% url 'teachers' %}"
+               {% if section == 'teachers' %}aria-current="page"{% endif %}>Преподаватели</a>
+            <a href="{% url 'management' %}"
+               {% if section == 'management' %}aria-current="page"{% endif %}>Управление</a>
+          {% endif %}
+        </nav>
+        <p class="sidebar-note">
+          Учебная версия
+          <br>
+          Данные вымышленные
+        </p>
+      </aside>
     {% endif %}
-  </nav>
-  <p class="sidebar-note">Учебная версия<br>Данные вымышленные</p>
-</aside>
-{% endif %}
-<div class="workspace {% if not user.is_authenticated %}guest{% endif %}">
-  <header class="topbar">
-    {% if user.is_authenticated %}<button class="menu-toggle secondary" type="button" aria-controls="navigation" aria-expanded="false">Меню</button>{% endif %}
-    <span class="muted">Учёт посещаемости</span>
-    {% if user.is_authenticated %}<div class="user-panel"><span>{{ user.get_full_name }}<small>{{ user.get_role_display }}</small></span><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="text-button">Выйти</button></form></div>{% endif %}
-  </header>
-  <main id="content">
-    {% if user.is_authenticated %}<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{% url 'dashboard' %}">Обзор</a>{% for label, link in breadcrumbs %}<span aria-hidden="true">/</span><a href="{{ link }}">{{ label }}</a>{% endfor %}{% if title != 'Обзор' %}<span aria-hidden="true">/</span><span aria-current="page">{{ title }}</span>{% endif %}</nav>{% endif %}
-    <div class="page-heading"><div><h1>{{ title }}</h1>{% if subtitle %}<p class="muted">{{ subtitle }}</p>{% endif %}</div>{% block actions %}{% endblock %}</div>
-    {% for message in messages %}<div class="notice {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
-    {% block content %}{% endblock %}
-  </main>
-  <footer>Учебный колледж · Журнал посещаемости</footer>
-</div>
-</body>
+    <div class="workspace {% if not user.is_authenticated %}guest{% endif %}">
+      <header class="topbar">
+        {% if user.is_authenticated %}
+          <button class="menu-toggle secondary"
+                  type="button"
+                  aria-controls="navigation"
+                  aria-expanded="false">Меню</button>
+        {% endif %}
+        <span class="muted">Учёт посещаемости</span>
+        {% if user.is_authenticated %}
+          <div class="user-panel">
+            <span>{{ user.get_full_name }}<small>{{ user.get_role_display }}</small></span>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button class="text-button">Выйти</button>
+            </form>
+          </div>
+        {% endif %}
+      </header>
+      <main id="content">
+        {% if user.is_authenticated %}
+          <nav class="breadcrumbs" aria-label="Хлебные крошки">
+            <a href="{% url 'dashboard' %}">Обзор</a>
+            {% for label, link in breadcrumbs %}<span aria-hidden="true">/</span><a href="{{ link }}">{{ label }}</a>{% endfor %}
+            {% if title != 'Обзор' %}<span aria-hidden="true">/</span><span aria-current="page">{{ title }}</span>{% endif %}
+          </nav>
+        {% endif %}
+        <div class="page-heading">
+          <div>
+            <h1>{{ title }}</h1>
+            {% if subtitle %}<p class="muted">{{ subtitle }}</p>{% endif %}
+          </div>
+          {% block actions %}{% endblock %}
+        </div>
+        {% for message in messages %}<div class="notice {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
+        {% block content %}{% endblock %}
+      </main>
+      <footer>
+        Учебный колледж · Журнал посещаемости
+      </footer>
+    </div>
+  </body>
 </html>

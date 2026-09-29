@@ -1,7 +1,67 @@
 {% extends 'base.html' %}
-{% block actions %}{% if user.is_administrator %}<a class="button secondary" href="{% url 'group_edit' group.pk %}">Изменить группу</a>{% endif %}{% endblock %}
+{% block actions %}
+  {% if user.is_administrator %}
+    <a class="button secondary" href="{% url 'group_edit' group.pk %}">Изменить группу</a>
+  {% endif %}
+{% endblock %}
 {% block content %}
-<section class="panel"><dl class="detail-list"><dt>Специальность</dt><dd>{{ group.specialty }}</dd><dt>Куратор</dt><dd>{{ group.curator }}</dd><dt>Форма обучения</dt><dd>{{ group.get_study_form_display }}</dd><dt>Годы обучения</dt><dd>{{ group.admission_year }}–{{ group.graduation_year }}</dd></dl></section>
-<div class="grid"><section class="panel"><h2>Состав группы на сегодня</h2><table><thead><tr><th>Студент</th><th>Номер</th></tr></thead><tbody>{% for record in records %}<tr><td><a href="{% url 'student_detail' record.student_id %}">{{ record.student }}</a></td><td>{{ record.student.number }}</td></tr>{% empty %}<tr><td colspan="2">В группе пока нет студентов.</td></tr>{% endfor %}</tbody></table></section>
-<section class="panel"><h2>Последние занятия</h2>{% for lesson in lessons %}<p><a href="{% url 'lesson_journal' lesson.pk %}">{{ lesson.date|date:'d.m.Y' }} · {{ lesson.assignment.discipline }}</a><br><small>{{ lesson.topic }}</small></p>{% empty %}<p>Занятия пока не созданы.</p>{% endfor %}</section></div>
+  <section class="panel">
+    <dl class="detail-list">
+      <dt>Специальность</dt>
+      <dd>
+        {{ group.specialty }}
+      </dd>
+      <dt>Куратор</dt>
+      <dd>
+        {{ group.curator }}
+      </dd>
+      <dt>Форма обучения</dt>
+      <dd>
+        {{ group.get_study_form_display }}
+      </dd>
+      <dt>Годы обучения</dt>
+      <dd>
+        {{ group.admission_year }}–{{ group.graduation_year }}
+      </dd>
+    </dl>
+  </section>
+  <div class="grid">
+    <section class="panel">
+      <h2>Состав группы на сегодня</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Студент</th>
+            <th>Номер</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in records %}
+            <tr>
+              <td>
+                <a href="{% url 'student_detail' record.student_id %}">{{ record.student }}</a>
+              </td>
+              <td>{{ record.student.number }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="2">В группе пока нет студентов.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    <section class="panel">
+      <h2>Последние занятия</h2>
+      {% for lesson in lessons %}
+        <p>
+          <a href="{% url 'lesson_journal' lesson.pk %}">{{ lesson.date|date:'d.m.Y' }} · {{ lesson.assignment.discipline }}</a>
+          <br>
+          <small>{{ lesson.topic }}</small>
+        </p>
+      {% empty %}
+        <p>Занятия пока не созданы.</p>
+      {% endfor %}
+    </section>
+  </div>
 {% endblock %}

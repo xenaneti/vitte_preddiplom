@@ -1,3 +1,32 @@
 {% extends 'base.html' %}
-{% block actions %}<a class="button" href="{% url 'assignment_create' %}">Добавить назначение</a>{% endblock %}
-{% block content %}<section class="panel table-wrap"><table><thead><tr><th>Преподаватель</th><th>Группа</th><th>Дисциплина</th><th>Период</th><th>Действует</th></tr></thead><tbody>{% for record in records %}<tr><td><a href="{% url 'assignment_edit' record.pk %}">{{ record.teacher }}</a></td><td>{{ record.group }}</td><td>{{ record.discipline }}</td><td>{{ record.started_on|date:'d.m.Y' }}–{{ record.ended_on|date:'d.m.Y' }}</td><td>{{ record.is_active|yesno:'Да,Нет' }}</td></tr>{% endfor %}</tbody></table></section>{% endblock %}
+{% block actions %}
+  <a class="button" href="{% url 'assignment_create' %}">Добавить назначение</a>
+{% endblock %}
+{% block content %}
+  <section class="panel table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Преподаватель</th>
+          <th>Группа</th>
+          <th>Дисциплина</th>
+          <th>Период</th>
+          <th>Действует</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+          <tr>
+            <td>
+              <a href="{% url 'assignment_edit' record.pk %}">{{ record.teacher }}</a>
+            </td>
+            <td>{{ record.group }}</td>
+            <td>{{ record.discipline }}</td>
+            <td>{{ record.started_on|date:'d.m.Y' }}–{{ record.ended_on|date:'d.m.Y' }}</td>
+            <td>{{ record.is_active|yesno:'Да,Нет' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

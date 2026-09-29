@@ -1,3 +1,30 @@
 {% extends 'base.html' %}
-{% block actions %}<a class="button" href="{% url 'specialty_create' %}">Добавить специальность</a>{% endblock %}
-{% block content %}<section class="panel table-wrap"><table><thead><tr><th>Код и название</th><th>Квалификация</th><th>Срок, месяцев</th><th>Состояние</th></tr></thead><tbody>{% for record in records %}<tr><td><a href="{% url 'specialty_edit' record.pk %}">{{ record }}</a></td><td>{{ record.qualification }}</td><td>{{ record.duration }}</td><td>{{ record.is_active|yesno:'Действует,Архив' }}</td></tr>{% endfor %}</tbody></table></section>{% endblock %}
+{% block actions %}
+  <a class="button" href="{% url 'specialty_create' %}">Добавить специальность</a>
+{% endblock %}
+{% block content %}
+  <section class="panel table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Код и название</th>
+          <th>Квалификация</th>
+          <th>Срок, месяцев</th>
+          <th>Состояние</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+          <tr>
+            <td>
+              <a href="{% url 'specialty_edit' record.pk %}">{{ record }}</a>
+            </td>
+            <td>{{ record.qualification }}</td>
+            <td>{{ record.duration }}</td>
+            <td>{{ record.is_active|yesno:'Действует,Архив' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}
