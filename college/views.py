@@ -15,15 +15,14 @@ from .common import form_page, page_records, save_form
 from .forms import AssignmentForm, CancellationForm, DisciplineForm, GroupForm, ImportForm, LessonForm, SpecialtyForm, StudentCreateForm, StudentForm, TeacherForm, TransferForm
 from .models import Discipline, Enrollment, Lesson, Specialty, Student, StudyGroup, Teacher, TeachingAssignment
 from .services import cancel_lesson, save_lesson, transfer_student
+from .filters import StudentFilter
 
 
 @login_required
 def students(request):
-    records = visible_students(request.user)
-    query = request.GET.get('q', '').strip()[:100]
-    if query:
-        records = records.filter(Q(last_name__icontains=query) | Q(first_name__icontains=query) | Q(number__icontains=query))
-    return render(request, 'college/students.html', {'records': page_records(request, records), 'query': query, 'title': 'Студенты', 'section': 'students'})
+    form = StudentFilter(request.GET, request.user)
+    records = form.filter_students(visible_students(request.user))
+    return render(request, 'college/students.html', {'records': page_records(request, records), 'filter': form, 'title': 'Студенты', 'section': 'students'})
 
 
 @login_required
