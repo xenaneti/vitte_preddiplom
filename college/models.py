@@ -65,6 +65,8 @@ class Student(models.Model):
     def clean(self):
         if self.birth_date and self.admitted_at and self.birth_date >= self.admitted_at:
             raise ValidationError({'birth_date': 'Дата рождения должна быть раньше даты зачисления.'})
+        if self.pk and self.admitted_at and self.enrollments.filter(started_on__lt=self.admitted_at).exists():
+            raise ValidationError({'admitted_at': 'До этой даты студент уже учился в группе. Проверьте дату зачисления.'})
 
     def __str__(self):
         return ' '.join(filter(None, [self.last_name, self.first_name, self.middle_name]))
@@ -76,6 +78,7 @@ class Enrollment(models.Model):
     started_on = models.DateField('С какой даты')
     ended_on = models.DateField('По какую дату', null=True, blank=True)
     note = models.CharField('Основание перевода', max_length=200, blank=True)
+    end_note = models.CharField('Основание завершения обучения', max_length=250, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -14,6 +14,11 @@ class DateInput(forms.DateInput):
 
 
 class StudentForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['is_active'].disabled = True
+        self.fields['is_active'].help_text = 'Обучение завершается через карточку студента с указанием даты.'
+
     class Meta:
         model = Student
         fields = ['number', 'last_name', 'first_name', 'middle_name', 'birth_date', 'email', 'admitted_at', 'is_active']
@@ -94,6 +99,11 @@ class TransferForm(forms.Form):
 
 class CancellationForm(forms.Form):
     reason = forms.CharField(label='Причина отмены', max_length=250, widget=forms.Textarea(attrs={'rows': 3}))
+
+
+class WithdrawalForm(forms.Form):
+    date = forms.DateField(label='Дата отчисления', widget=DateInput(), initial=timezone.localdate)
+    note = forms.CharField(label='Основание', max_length=200, help_text='Например, номер и дата приказа.')
 
 
 class ImportForm(forms.Form):

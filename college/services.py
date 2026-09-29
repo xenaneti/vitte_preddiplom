@@ -28,6 +28,23 @@ def transfer_student(student, group, date, note):
 
 
 @transaction.atomic
+def withdraw_student(student, date, note):
+    student = Student.objects.select_for_update().get(pk=student.pk)
+    current = student.enrollments.filter(ended_on__isnull=True).first()
+    if not current or not student.is_active:
+        raise ValidationError('У студента уже завершено обучение.')
+    if date <= current.started_on or date > timezone.localdate():
+        raise ValidationError('Укажите дату после начала обучения, не позднее сегодняшнего дня.')
+    if student.marks.filter(lesson__date__gte=date).exists():
+        raise ValidationError('На дату отчисления или позже уже есть отметки. Проверьте дату.')
+    current.ended_on = date - timedelta(days=1)
+    current.end_note = f'Отчисление {date:%d.%m.%Y}: {note}'
+    current.save(update_fields=['ended_on', 'end_note'])
+    student.is_active = False
+    student.save(update_fields=['is_active'])
+
+
+@transaction.atomic
 def save_lesson(form):
     lesson = form.save(commit=False)
     Teacher.objects.select_for_update().get(pk=lesson.assignment.teacher_id)

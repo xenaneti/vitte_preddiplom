@@ -16,6 +16,8 @@ from .forms import AssignmentForm, CancellationForm, DisciplineForm, GroupForm, 
 from .models import Discipline, Enrollment, Lesson, Specialty, Student, StudyGroup, Teacher, TeachingAssignment
 from .services import cancel_lesson, save_lesson, transfer_student
 from .filters import StudentFilter
+from .forms import WithdrawalForm
+from .services import withdraw_student
 
 
 @login_required
@@ -61,6 +63,21 @@ def student_transfer(request, pk):
             messages.success(request, 'Перевод сохранён. Прежний журнал остался без изменений.')
             return redirect('student_detail', pk=pk)
     return form_page(request, form, f'Перевод: {student}', 'students', 'students')
+
+
+@admin_required
+def student_withdraw(request, pk):
+    student = get_object_or_404(Student, pk=pk)
+    form = WithdrawalForm(request.POST if request.method == 'POST' else None)
+    if request.method == 'POST' and form.is_valid():
+        try:
+            withdraw_student(student, form.cleaned_data['date'], form.cleaned_data['note'])
+        except ValidationError as error:
+            form.add_error(None, error)
+        else:
+            messages.success(request, 'Обучение завершено. Прежние отметки сохранены.')
+            return redirect('student_detail', pk=pk)
+    return form_page(request, form, f'Отчисление: {student}', 'students', 'students')
 
 
 @login_required
