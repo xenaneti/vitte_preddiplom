@@ -14,6 +14,7 @@ from .services import save_marks, snapshot
 from .statistics import detailed_statistics, report_data
 from .export import excel_report
 from .history import describe_changes
+from .matrix import MatrixFilter, group_matrix
 
 
 @login_required
@@ -21,6 +22,21 @@ def journal(request):
     form = JournalFilter(request.GET, request.user)
     records = form.filter_lessons(visible_lessons(request.user))
     return render(request, 'journal/list.html', {'filter': form, 'records': page_records(request, records), 'title': 'Журнал посещаемости', 'section': 'journal'})
+
+
+@login_required
+def matrix(request):
+    form = MatrixFilter(request.GET, request.user)
+    if not request.GET:
+        form.fields['group'].required = False
+    data = {'columns': [], 'rows': []}
+    if request.GET:
+        try:
+            data = group_matrix(request.user, form)
+        except ValidationError as error:
+            form.add_error(None, error)
+    data.update({'filter': form, 'title': 'Журнал группы', 'section': 'journal', 'breadcrumbs': [('Журнал', reverse('journal'))]})
+    return render(request, 'journal/matrix.html', data)
 
 
 @login_required

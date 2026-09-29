@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="panel">
+  {% include 'includes/filters.html' %}
+  <p class="muted">П — присутствовал, Н — отсутствовал, О — опоздал, У — уважительная причина. Точка означает пустую отметку, тире — студент ещё не учился или уже переведён.</p>
+  {% if columns %}
+  <div class="table-wrap">
+    <table class="matrix-table">
+      <thead><tr><th>Студент</th>
+      {% for lesson in columns %}
+        <th><a href="{% url 'lesson_journal' lesson.pk %}" title="{{ lesson.assignment.discipline }}: {{ lesson.topic }}">{{ lesson.date|date:'d.m' }}<br>{{ lesson.starts_at|time:'H:i' }}</a><small>{{ lesson.assignment.discipline.code }}</small></th>
+      {% endfor %}
+      <th>Посещаемость</th></tr></thead>
+      <tbody>{% for row in rows %}
+        <tr><td><a href="{% url 'student_detail' row.student.pk %}">{{ row.student }}</a></td>
+        {% for cell in row.cells %}<td><a class="matrix-mark {{ cell.status }}" href="{% url 'lesson_journal' cell.lesson_id %}" title="{{ cell.title }}" aria-label="{{ row.student }}: {{ cell.title }}">{{ cell.symbol }}</a></td>{% endfor %}
+        <td>{% if row.percentage is not None %}{{ row.percentage }}%{% else %}—{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="100">В группе нет студентов за выбранный период.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  <p class="muted">Процент рассчитывается только по проведённым занятиям. Отменённые занятия в таблицу не входят.</p>
+  {% else %}<p class="empty">Выберите группу и период. Для заданных условий занятия не найдены.</p>{% endif %}
+</section>
+{% endblock %}
