@@ -1,0 +1,23 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{{ title }} · Журнал посещаемости</title>
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+</head>
+<body>
+  <div class="workspace guest">
+    <main>
+      <section class="panel">
+        <p class="muted">Ошибка {{ code }}</p>
+        <h1>{{ title }}</h1>
+        <p>{{ text }}</p>
+        <a class="button" href="{% url 'dashboard' %}">На главную</a>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
