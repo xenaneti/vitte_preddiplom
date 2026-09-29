@@ -13,7 +13,7 @@
     <a class="skip" href="#content">Перейти к содержимому</a>
     {% if user.is_authenticated %}
       <aside class="sidebar" id="navigation">
-        <a class="brand" href="{% url 'dashboard' %}"><span class="brand-icon">К</span><span>Учебный колледж<small>Журнал посещаемости</small></span></a>
+        <a class="brand" href="{% url 'dashboard' %}"><span class="brand-icon">К</span><span>Колледж<small>Журнал посещаемости</small></span></a>
         <nav aria-label="Основные разделы">
           <a href="{% url 'dashboard' %}"
              {% if section == 'dashboard' %}aria-current="page"{% endif %}>Обзор</a>
@@ -46,11 +46,6 @@
                {% if section == 'management' %}aria-current="page"{% endif %}>Управление</a>
           {% endif %}
         </nav>
-        <p class="sidebar-note">
-          Учебная версия
-          <br>
-          Данные вымышленные
-        </p>
       </aside>
     {% endif %}
     <div class="workspace {% if not user.is_authenticated %}guest{% endif %}">
@@ -91,7 +86,7 @@
         {% block content %}{% endblock %}
       </main>
       <footer>
-        Учебный колледж · Журнал посещаемости
+        Колледж · Журнал посещаемости
       </footer>
     </div>
   </body>

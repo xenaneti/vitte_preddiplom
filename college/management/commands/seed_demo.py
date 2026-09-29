@@ -65,20 +65,20 @@ SUBJECTS = [
 
 
 class Command(BaseCommand):
-    help = "Добавляет вымышленные данные и пользователей для учебного показа."
+    help = "Добавляет начальные записи и пользователей для проверки приложения."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--password-file", help="Файл с паролем демонстрационных учётных записей"
+            "--password-file", help="Файл с паролем создаваемых учётных записей"
         )
-        parser.add_argument("--date", help="Дата демонстрации в формате ГГГГ-ММ-ДД")
+        parser.add_argument("--date", help="Дата начальных записей в формате ГГГГ-ММ-ДД")
 
     @transaction.atomic
     def handle(self, *args, **options):
         password = (
             Path(options["password_file"]).read_text(encoding="utf-8").strip()
             if options["password_file"]
-            else getpass("Пароль для демонстрационных учётных записей: ")
+            else getpass("Пароль для создаваемых учётных записей: ")
         )
         if len(password) < 12:
             raise CommandError("Используйте пароль длиной не менее 12 символов.")
@@ -247,14 +247,14 @@ class Command(BaseCommand):
                                         attendance=mark,
                                         author=administrator,
                                         after=snapshot(mark),
-                                        explanation="Начальное демонстрационное наполнение",
+                                        explanation="Начальное заполнение базы",
                                     )
                                     for mark in marks
                                 ]
                             )
                     current += timedelta(days=1)
         self.stdout.write(
-            f"Демонстрационные данные: {StudyGroup.objects.count()} группы, {Student.objects.count()} студентов, {Lesson.objects.count()} занятия."
+            f"Созданы записи: {StudyGroup.objects.count()} группы, {Student.objects.count()} студентов, {Lesson.objects.count()} занятия."
         )
         self.stdout.write(
             "Пользователи: administrator, teacher1–teacher8, curator1–curator4. Существующие пароли и отметки не перезаписаны."
