@@ -2,7 +2,7 @@ from io import BytesIO
 
 from django.http import HttpResponse
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
 
 
 def append_row(sheet, values):
@@ -48,5 +48,43 @@ def excel_report(data, date_from, date_to):
     workbook.save(output)
     response = HttpResponse(output.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="attendance_{date_from}_{date_to}.xlsx"'
+    response['Cache-Control'] = 'no-store'
+    return response
+
+
+def matrix_report(data, group, date_from, date_to):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = 'Журнал группы'
+    append_row(sheet, [f'Группа {group}', str(date_from), str(date_to)])
+    headers = ['Студент', 'Номер']
+    for lesson in data['columns']:
+        headers.append(f'{lesson.date:%d.%m}\n{lesson.starts_at:%H:%M}\n{lesson.assignment.discipline.code}')
+    headers.append('Посещаемость, %')
+    append_row(sheet, headers)
+    colors = {'П': 'E7F4EB', 'Н': 'FDECEC', 'О': 'FFF3D6', 'У': 'E8EFFF'}
+    for row in data['rows']:
+        append_row(sheet, [str(row['student']), row['student'].number] + [cell['symbol'] for cell in row['cells']] + [row['percentage']])
+        for cell in sheet[sheet.max_row][2:-1]:
+            cell.alignment = Alignment(horizontal='center')
+            if cell.value in colors:
+                cell.fill = PatternFill('solid', fgColor=colors[cell.value])
+    sheet.freeze_panes = 'C3'
+    sheet.row_dimensions[2].height = 50
+    for cell in sheet[2]:
+        cell.alignment = Alignment(wrap_text=True, vertical='center')
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='315ACB')
+    for column in sheet.columns:
+        sheet.column_dimensions[column[0].column_letter].width = 12
+    sheet.column_dimensions['A'].width = 35
+    sheet.column_dimensions['B'].width = 16
+    sheet.column_dimensions[sheet.cell(2, sheet.max_column).column_letter].width = 20
+    append_row(sheet, ['П — присутствовал; Н — отсутствовал; О — опоздал; У — уважительная причина.'])
+    append_row(sheet, ['Точка — нет отметки; тире — не входил в группу. Процент — только по проведённым занятиям.'])
+    output = BytesIO()
+    workbook.save(output)
+    response = HttpResponse(output.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="group_journal_{date_from}_{date_to}.xlsx"'
     response['Cache-Control'] = 'no-store'
     return response

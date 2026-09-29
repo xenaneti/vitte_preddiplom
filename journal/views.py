@@ -12,7 +12,7 @@ from accounts.permissions import admin_required
 from college.common import page_records, save_form
 from .services import save_marks, snapshot
 from .statistics import detailed_statistics, report_data
-from .export import excel_report
+from .export import excel_report, matrix_report
 from .history import describe_changes
 from .matrix import MatrixFilter, group_matrix
 
@@ -35,7 +35,12 @@ def matrix(request):
             data = group_matrix(request.user, form)
         except ValidationError as error:
             form.add_error(None, error)
-    data.update({'filter': form, 'title': 'Журнал группы', 'section': 'journal', 'breadcrumbs': [('Журнал', reverse('journal'))]})
+        if request.GET.get('format') == 'xlsx' and form.is_valid() and data['columns']:
+            values = form.cleaned_data
+            return matrix_report(data, values['group'], values['date_from'], values['date_to'])
+    query = request.GET.copy()
+    query['format'] = 'xlsx'
+    data.update({'filter': form, 'export_query': query.urlencode(), 'title': 'Журнал группы', 'section': 'journal', 'breadcrumbs': [('Журнал', reverse('journal'))]})
     return render(request, 'journal/matrix.html', data)
 
 

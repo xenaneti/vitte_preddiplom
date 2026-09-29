@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% block actions %}{% if columns %}<a class="button" href="?{{ export_query }}">Скачать журнал в Excel</a>{% endif %}{% endblock %}
 {% block content %}
 <section class="panel">
   {% include 'includes/filters.html' %}
